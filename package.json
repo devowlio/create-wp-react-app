@@ -16,10 +16,18 @@
     "zero-configuration",
     "build-tools"
   ],
+  "bin": {
+    "create-wp-react-app": "bin/index.js"
+  },
   "author": "Matthias Günter <support@matthias-web.com>",
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/matzeeable/create-wp-react-app/issues"
   },
-  "homepage": "https://github.com/matzeeable/create-wp-react-app#readme"
+  "homepage": "https://github.com/matzeeable/create-wp-react-app#readme",
+  "dependencies": {
+    "execa": "^1.0.0",
+    "listr": "^0.14.2",
+    "rimraf": "^2.6.2"
+  }
 }
