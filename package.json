@@ -1,0 +1,25 @@
+{
+  "name": "create-wp-react-app",
+  "version": "1.0.0",
+  "description": "Create React WordPress plugin with no build configuration.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/matzeeable/create-wp-react-app.git"
+  },
+  "keywords": [
+    "wp",
+    "react",
+    "zero-configuration",
+    "build-tools"
+  ],
+  "author": "Matthias Günter <support@matthias-web.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/matzeeable/create-wp-react-app/issues"
+  },
+  "homepage": "https://github.com/matzeeable/create-wp-react-app#readme"
+}
