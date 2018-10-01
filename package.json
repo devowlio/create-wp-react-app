@@ -27,7 +27,10 @@
   "homepage": "https://github.com/matzeeable/create-wp-react-app#readme",
   "dependencies": {
     "execa": "^1.0.0",
+    "glob": "^7.1.3",
     "listr": "^0.14.2",
+    "listr-input": "^0.1.3",
+    "lodash": "^4.17.11",
     "rimraf": "^2.6.2"
   }
 }
