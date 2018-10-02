@@ -5,11 +5,11 @@ const execa = require('execa'),
     Listr = require('listr'),
     rimraf = require('rimraf'),
     path = require('path'),
-    glob = require('path'),
+    glob = require('glob'),
     prompt = require('../lib/prompt'),
     _ = require("lodash");
 
-let tmpl, pluginFileList = { };
+let tmpl, pluginFileList = { }, constantList = [ ];
 
 const e2Error = e => new Error(e.message.replace(/\n/g, ' '));
 
@@ -44,7 +44,7 @@ new Listr([{
         		    if (!/^[A-Za-z0-9-_]+$/.test(pluginSlug)) {
         		        throw new Error('Your plugin slug "' + pluginSlug + '" should be in format: /^[A-Za-z0-9-_]+$/');
         		    }
-        		    task.title = '"' + pluginSlug + '" is a valid plugin name!';
+        		    task.title = '"' + pluginSlug + '" is a valid plugin slug!';
         		    headTask.title += ' Passed!';
 				}
 			}
@@ -62,8 +62,8 @@ new Listr([{
 		    title: 'Disconnect git repository',
 		    task: () => new Promise((resolve, reject) => {
 		        rimraf(path.join(pluginSlug, '.git'), () => {
-                    pluginFileList.php = glob.sync('**/*.php', { cwd: pluginCwd });
-                    pluginFileList.js = glob.sync('**/*.js', { cwd: pluginCwd });
+                    pluginFileList.php = glob.sync('**/*.php', { cwd: pluginCwd, absolute: true });
+                    pluginFileList.js = glob.sync('**/*.js', { cwd: pluginCwd, absolute: true });
 		            resolve();
 		        });
 		    })
@@ -90,6 +90,12 @@ new Listr([{
 	            // We have all the informations, let's parse the index.php file
                 let indexPHP = tmpl;
                 _.each(prompt.data, (value, key) => {
+                	switch (key) {
+                		case 'namespace':
+                			value = value.replace(/\\/g, '\\\\');
+                			break;
+                		default: break;
+                	}
                     indexPHP = indexPHP.replace(new RegExp('\\$\\{' + key + '\\}', 'g'), value);
                 });
                 
@@ -97,7 +103,7 @@ new Listr([{
                 fs.writeFileSync(path.join(pluginCwd, 'index.php'), indexPHP, { encoding });
         
                 // Read all available constants
-                let m, regex = /define\(\'([^\']+)/g, constants = [];
+                let m, regex = /define\(\'([^\']+)/g;
                 while ((m = regex.exec(indexPHP)) !== null) {
                     if (m.index === regex.lastIndex) {
                         regex.lastIndex++;
@@ -105,7 +111,7 @@ new Listr([{
                     
                     m.forEach((match, groupIndex) => {
             			if (groupIndex === 1) {
-            				constants.push(match);
+            				constantList.push(match);
             			}
                     });
                 }
@@ -113,42 +119,102 @@ new Listr([{
 	    }, {
 	        title: 'Modify PHP files',
 	        task: (ctx, task) => {
+	        	const parseOldConstant = constant => 'WPRJSS' + constant.slice(prompt.data.constantPrefix.length),
+	        		functions = ['wprjss_skip_php_admin_notice', 'wprjss_skip_wp_admin_notice', 'wprjss_skip_rest_admin_notice'];
+	        		
 	            pluginFileList.php.forEach(file => {
-                    task.title += file + ';';
-                });
+	            	let fileContent = fs.readFileSync(file, { encoding });
+            		
+            		// Replacing the constants
+	                _.each(constantList, constant => {
+	                    fileContent = fileContent.replace(new RegExp(parseOldConstant(constant), 'g'), constant);
+	                });
+	                
+	                // Replacing the namespaces in /inc files
+            		fileContent = fileContent.replace(new RegExp('MatthiasWeb\\\\WPRJSS', 'g'), prompt.data.namespace.replace(/\\\\/g, '\\'));
+            		
+            		// Apply for procedural functions
+	                _.each(functions, fnName => {
+	                    fileContent = fileContent.replace(new RegExp(fnName, 'g'), fnName.replace('wprjss', prompt.data.optPrefix));
+	                });
+	                
+	                // File specific replaces
+	                switch (file) {
+	                    case path.join(pluginCwd, 'inc/general/Assets.class.php'):
+	                        fileContent = fileContent.replace(new RegExp('wp-reactjs-starter', 'g'), prompt.data.textDomain);
+	                        fileContent = fileContent.replace('wprjssOpts', prompt.data.optPrefix + 'Opts');
+	                        break;
+	                    case path.join(pluginCwd, 'inc/rest/Service.class.php'):
+	                        fileContent = fileContent.replace('wprjss/v1', prompt.data.apiPrefix);
+	                        break;
+	                    case path.join(pluginCwd, 'inc/menu/Page.class.php'):
+	                        fileContent = fileContent.replace(new RegExp('wp-react-component-library', 'g'), prompt.data.optPrefix + '-wp-react-component-library');
+	                        break;
+	                    default:
+	                        break;
+	                }
+	                
+	                // Write file
+                	fs.writeFileSync(file, fileContent, { encoding });
+	            });
 	        }
 	    }, {
 	        title: 'Modify JS files',
 	        task: () => {
-	            
+	            pluginFileList.js.forEach(file => {
+	            	let fileContent = fs.readFileSync(file, { encoding });
+	            	
+	            	// Replace localized object
+		            fileContent = fileContent.replace(new RegExp('window.wprjssOpts', 'g'), 'window.' + prompt.data.optPrefix + 'Opts');
+		            
+		            // File specific replaces
+		            switch (file) {
+		                case path.join(pluginCwd, 'public/src/admin.js'):
+		                    fileContent = fileContent.replace('wp-react-component-library', prompt.data.optPrefix + '-wp-react-component-library');
+		                default:
+		                    break;
+		            }
+		            
+		            // Write file
+                	fs.writeFileSync(file, fileContent, { encoding });
+	            });
 	        }
 	    }, {
-	        title: 'Create language POT files',
+	        title: 'Create language POT file',
 	        task: () => {
-	            
+			    const potFile = path.join(pluginCwd, 'languages/wp-reactjs-starter.pot'), potContent = fs.readFileSync(potFile, { encoding });
+			    fs.unlinkSync(potFile);
+			    fs.writeFileSync(
+			    	path.join(pluginCwd, 'languages/' + prompt.data.textDomain + '.pot'),
+			    	potContent.replace('WP ReactJS Starter', prompt.data.pluginName),
+			    	{ encoding }
+			    );
 	        }
 	    }])
 	}, {
 	    title: 'First build',
-	    task: () => new Listr([{
+	    task: (ctx, headTask) => new Listr([{
 	        title: 'Generate documentations (PHP, JS, API, Hooks)',
-	        task: () => {
-	            
-	        }
+	        task: () => execa('npm', ['run', 'docs'], { cwd: pluginCwd })
 	    }, {
-	        title: 'Webpack build (dist and dev)',
-	        task: () => {
-	            
-	        }
+	        title: 'Webpack /public/dist build',
+	        task: () => execa('npm', ['run', 'build'], { cwd: pluginCwd })
+	    }, {
+	        title: 'Webpack /public/dev build',
+	        task: () => execa('npm', ['run', 'build-dev'], { cwd: pluginCwd })
 	    }, {
 	        title: 'Copy public library files from node_modules',
-	        task: () => {
-	            
-	        }
+	        task: () => new Promise((resolve, reject) => {
+	        	execa('grunt', ['copy-npmLibs'], { cwd: pluginCwd }).then(() => {
+		            headTask.title = 'First build done, navigate to your plugins admin page and activate "' + prompt.data.pluginName +
+		            	'". Learn more about the boilerplate here: https://git.io/fxTg6';
+		            resolve();
+	        	}, reject);
+        	})
 	    }])
 	}
 ], {
-    collapse: false
+    collapse: true
 }).run().catch(err => {
 	// Silence is golden.
 });
