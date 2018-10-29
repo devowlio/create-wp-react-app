@@ -33,7 +33,7 @@ The `repository` options allows you to build your own forked boilerplate based o
 For example you can offer your plugin users to quick-start an Add-On. For example have a look at [matzeeable/wp-real-media-library-add-on](https://github.com/matzeeable/wp-real-media-library-add-on).
 
 ## Extensibility
-If you are using your own forked boierlplate you can create a [`build/create-wp-react-app.js`](https://github.com/matzeeable/wp-real-media-library-add-on/blob/master/build/create-wp-react-app.js) file to modify the generation process.
+If you are using your own forked boilerplate you can create a [`build/create-wp-react-app.js`](https://github.com/matzeeable/wp-real-media-library-add-on/blob/master/build/create-wp-react-app.js) file to modify the generation process.
 
 #### `prompts`
 This export function allows you to add an input field to the generation process (prompts). For this, [listr-input](https://github.com/SamVerschueren/listr-input) tasks are used.
