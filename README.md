@@ -19,14 +19,30 @@ $ create-wp-react-app create my-plugin
 
 ## Usage
 ```
-Usage: create-wp-react-app create [options] <slug>
+Usage: create [options] <slug>
 
 Create a new WP plugin with the given plugin slug
 
 Options:
 
-  -r, --repository [repository]  The repository URL, default is https://github.com/matzeeable/wp-reactjs-starter
-  -h, --help                     output usage information
+  -r, --repository [value]         The repository URL, default is https://github.com/matzeeable/wp-reactjs-starter
+  -n, --pluginName <value>         Plugin name
+  -u, --pluginURI <value>          Plugin URI
+  -d, --pluginDescription <value>  Plugin description
+  -a, --author <value>             Author
+  -i, --authorURI <value>          Author URI
+  -v, --version <value>            Plugin initial version
+  -t, --textDomain <value>         Plugin slug for text domain, language files, ...
+  -p, --minPHP <value>             Minimum PHP version (minimum of 5.3 required for the boilerplate)
+  -w, --minWP <value>              Minimum WordPress version (minimum of 4.4 required for the boilerplate)
+  -m, --namespace <value>          PHP Namespace
+  -o, --optPrefix <value>          WordPress option names prefix
+  -b, --dbPrefix <value>           WordPress database tables prefix
+  -c, --constantPrefix <value>     PHP constants prefix for the above options
+  -j, --apiPrefix <value>          REST API namespace prefix
+  -s, --skip                       Skip the prompts and use the default values if not specified with above arguments (prompt validators are skipped)
+  -y, --dry                        Dry run
+  -h, --help                       output usage information
 ```
 
 The `repository` options allows you to build your own forked boilerplate based on the [WP ReactJS Starter boilerplate](https://github.com/matzeeable/wp-reactjs-starter).
@@ -42,7 +58,7 @@ This export function allows you to add an input field to the generation process 
 /**
  * Add the minimum required Real Media Library version to the prompts.
  */
-exports.prompts = ({ task, pluginCwd, createInputTask }) => {
+exports.prompts = ({ task, pluginCwd, createInputTask, skip, passedPrompts }) => {
     task.add(createInputTask({
         name: 'Minimum Real Media Library version',
         key: 'minRML',
