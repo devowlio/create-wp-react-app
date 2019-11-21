@@ -1,0 +1,79 @@
+# Semantic release with automatic versioning/changelog depending on the commit messages
+release:
+    extends: [.install, .only production]
+    stage: release
+    script:
+        # Create a ".publish" file for all changed packages so next jobs can rely on it (.lerna changes)
+        - rm -f {packages,plugins}/*/.publish
+        - yarn --silent lerna changed --all -p --loglevel silent 2>/dev/null | while read line; do touch "$line"/.publish; done
+        # Do the semantic versioning and changelog generation (it also includes npm publishing for non-private packages)
+        - yarn lerna publish --yes
+    artifacts:
+        name: technical publish files
+        paths:
+            - packages/*/.publish
+            - plugins/*/.publish
+
+# Use the GitLab "Review apps" feature so the commits can be viewed directly in the browser
+docker review start:
+    stage: release
+    dependencies: [collect all artifacts]
+    variables:
+        COMPOSE_PROJECT_NAME_SUFFIX: -traefik
+    script:
+        # Cleanup previous environments
+        - chmod +x ./devops/scripts/*
+        - ./devops/scripts/purge-ci.sh
+        # Start traefik containers and sleep until server is up and running
+        - export WP_CI_INSTALL_URL="$CI_COMMIT_REF_SLUG-$COMPOSE_PROJECT_NAME-$CI_TRAEFIK_HOST"
+        - yarn docker-compose-traefik up --build -d
+        - export WP_WAIT_CONTAINER=$(yarn --silent docker-compose-traefik-name-wordpress)
+        # Collect all builds and copy them to the container, and wait for the plugin until it is ready
+        - for slug in $(yarn --silent workspace:slugs); do docker cp plugins/$slug/build/$slug $WP_WAIT_CONTAINER:/var/www/html/wp-content/plugins; done;
+        - yarn wp-wait
+    only:
+        refs: [branches]
+        variables:
+            - $CI_TRAEFIK_HOST && $CI_TRAEFIK_BAUTH
+    except: [master]
+    environment:
+        name: review/$CI_COMMIT_REF_NAME
+        url: http://${CI_COMMIT_REF_SLUG}-${COMPOSE_PROJECT_NAME}-${CI_TRAEFIK_HOST}
+        on_stop: docker review stop
+
+# Listen to review stop so the docker container can be removed
+docker review stop:
+    stage: release
+    variables:
+        COMPOSE_PROJECT_NAME_SUFFIX: -traefik
+    script:
+        - chmod +x ./devops/scripts/purge-ci.sh
+        - ./devops/scripts/purge-ci.sh
+    when: manual
+    only:
+        refs: [branches]
+        variables:
+            - $CI_TRAEFIK_HOST && $CI_TRAEFIK_BAUTH
+    except: [master]
+    environment:
+        name: review/$CI_COMMIT_REF_NAME
+        action: stop
+
+# Publish a plugin to the wordpress.org repository
+.wordpress.org:
+    stage: deploy
+    script:
+        - cd plugins/$JOB_PACKAGE_NAME
+        - svn co $WPORG_SVN_URL wporg --username "$WPORG_SVN_USERNAME" --password "$WPORG_SVN_PASSWORD" --non-interactive --no-auth-cache
+        - rm -rf wporg/assets wporg/trunk
+        - mkdir wporg/assets wporg/trunk
+        - cp -r wordpress.org/assets/* wporg/assets
+        - cp -r build/$COPY_BUILD_FOLDER/* wporg/trunk
+        - cd wporg
+        - svn status
+        - svn add --force * --auto-props --parents --depth infinity -q
+        - svn ci -m "This commit is generated through CI/CD, see the GIT repository for more details ($CI_COMMIT_SHA)" --username "$WPORG_SVN_USERNAME" --password "$WPORG_SVN_PASSWORD" --non-interactive --no-auth-cache
+    only:
+        refs: [master]
+        variables:
+            - $WPORG_SVN_URL && $WPORG_SVN_USERNAME && $WPORG_SVN_PASSWORD && $JOB_PACKAGE_NAME && $COPY_BUILD_FOLDER

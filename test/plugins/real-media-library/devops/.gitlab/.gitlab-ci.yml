@@ -1,0 +1,21 @@
+# Common extendable job definition for each plugin specific job
+.rml jobs:
+    variables:
+        JOB_PACKAGE_NAME: real-media-library
+
+# Create only changes expression so a job is only called when there is a relevant change
+# This must be here because variables are not allowed in `only`
+.rml only changes:
+    only:
+        changes:
+            - plugins/real-media-library/**/*
+            - common/**/*
+            - "*.yml"
+            - "*.json"
+            - "*.lock"
+
+include:
+    - /plugins/real-media-library/devops/.gitlab/stage-build.yml
+    - /plugins/real-media-library/devops/.gitlab/stage-test.yml
+    - /plugins/real-media-library/devops/.gitlab/stage-build-production.yml
+    - /plugins/real-media-library/devops/.gitlab/stage-deploy.yml

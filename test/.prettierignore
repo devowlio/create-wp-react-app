@@ -1,0 +1,5 @@
+plugins/*/CHANGELOG.md
+*.lock
+plugins/*/languages/
+plugins/*/public/languages
+plugins/*/build/**/*

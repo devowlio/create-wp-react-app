@@ -1,0 +1,25 @@
+# When docker relevant files got changed remove all docker containers automatically
+docker e2e purge:
+    stage: validate
+    variables:
+        COMPOSE_PROJECT_NAME_SUFFIX: -ci
+    script:
+        - chmod +x ./devops/scripts/purge-ci.sh
+        - ./devops/scripts/purge-ci.sh
+
+# Semantic versioning and changelog generation
+semver:
+    extends: .install
+    stage: validate
+    script:
+        - yarn lerna version --yes --no-push --no-git-tag-version --allow-branch "$CI_COMMIT_REF_NAME" --loglevel silly
+    artifacts:
+        name: semver
+        paths:
+            - package.json
+            - plugins/*/package.json
+            - plugins/*/CHANGELOG.md
+            - plugins/*/src/index.php
+            - packages/*/package.json
+            - packages/*/CHANGELOG.md
+            - yarn.lock

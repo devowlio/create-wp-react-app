@@ -1,0 +1,5 @@
+# Start the cypress e2e test
+rml docker e2e cypress:
+    extends: [.rml jobs, .rml only changes, .docker e2e cypress]
+    # only: # Add dependent plugins so you run also the test if another plugin changes
+    #    changes: ["plugins/{dependent-plugin1,dependent-plugin2}/**/*"]

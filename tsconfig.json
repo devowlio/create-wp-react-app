@@ -1,0 +1,38 @@
+{
+    /* Documentation: https://www.typescriptlang.org/docs/handbook/compiler-options.html */
+    "compilerOptions": {
+        /* Basic options */
+        "target": "es5",
+        "module": "commonjs",
+        "lib": ["es2015", "dom", "dom.iterable", "esnext"],
+        "allowJs": false,
+        "jsx": "preserve",
+        "skipLibCheck": false,
+        "isolatedModules": false,
+        "outDir": "lib",
+
+        /* Strict Type-Checking Options */
+        "strict": true,
+        "noImplicitAny": true,
+        "strictNullChecks": false,
+        "strictFunctionTypes": true,
+        "strictPropertyInitialization": false,
+        "noImplicitThis": true,
+        "alwaysStrict": true,
+
+        /* Additional Checks */
+        "noUnusedLocals": false,
+        "noUnusedParameters": false,
+        "noImplicitReturns": true,
+        "noFallthroughCasesInSwitch": false,
+
+        /* Module Resolution Options */
+        "moduleResolution": "node",
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+
+        /* Experimental Options */
+        "experimentalDecorators": true
+    },
+    "include": ["src/**/*"]
+}

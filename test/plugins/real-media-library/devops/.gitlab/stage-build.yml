@@ -1,0 +1,11 @@
+# Generate technical documents
+rml docs:
+    extends: [.rml jobs, .rml only changes, .docs]
+
+# Lint typescript coding
+rml lint:
+    extends: [.rml jobs, .rml only changes, .lint]
+
+# Create build files and run it through docker
+rml build:
+    extends: [.rml jobs, .build plugin]
