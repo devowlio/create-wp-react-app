@@ -1,5 +1,5 @@
 import { command } from "commander";
-import { createWorkspacePrompt } from "./prompt";
+import { createWorkspacePrompt } from "./";
 
 type CreateWorkspaceOpts = {
     workspace: string;

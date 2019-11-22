@@ -1,3 +1,0 @@
-# Lint typescript coding
-utils lint:
-    extends: [.utils jobs, .utils only changes, .lint]

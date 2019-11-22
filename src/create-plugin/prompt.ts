@@ -1,5 +1,5 @@
 import { prompt } from "inquirer";
-import { CreatePluginOpts, createPluginCommand } from "./program";
+import { CreatePluginOpts, createPluginCommand, createPluginExecute } from "./";
 import {
     getCommandDescriptionForPrompt,
     logError,
@@ -10,28 +10,35 @@ import {
 } from "../utils";
 import chalk from "chalk";
 import { resolve, join } from "path";
-import { createPluginExecute } from "./execute";
 import { existsSync } from "fs";
 
 /**
  * Prompt for CLI arguments which are not passed.
+ *
+ * @param opts
+ * @param before If you pass a callback the plugin itself will not be installed and build because it comes from create-workspace
+ * @param after
  */
-function createPluginPrompt({
-    cwd,
-    pluginName,
-    slug,
-    pluginUri,
-    pluginDesc,
-    author,
-    authorUri,
-    pluginVersion,
-    minPhp,
-    minWp,
-    namespace,
-    optPrefix,
-    dbPrefix,
-    constantPrefix
-}: CreatePluginOpts) {
+function createPluginPrompt(
+    {
+        cwd,
+        pluginName,
+        slug,
+        pluginUri,
+        pluginDesc,
+        author,
+        authorUri,
+        pluginVersion,
+        minPhp,
+        minWp,
+        namespace,
+        optPrefix,
+        dbPrefix,
+        constantPrefix
+    }: Partial<CreatePluginOpts>,
+    before?: () => Promise<void>,
+    after?: () => Promise<void>
+) {
     const createWorkspaceCwd = cwd ? resolve(cwd) : process.cwd();
 
     // Get the root package
@@ -172,7 +179,13 @@ function createPluginPrompt({
             };
             parsed.namespace = parsed.namespace.replace(/\\\\/g, "\\");
             parsed = caseAll(parsed, ["constantPrefix"], ["slug", "pluginUri", "authorUri", "optPrefix", "dbPrefix"]);
-            await createPluginExecute(root, parsed);
+            if (before) {
+                await before();
+            }
+            await createPluginExecute(root, parsed, !!before);
+            if (after) {
+                await after();
+            }
         } catch (e) {
             logError(e.toString());
         }

@@ -1,4 +1,0 @@
-# Build production ready WP plugin
-wprjss build production:
-    extends: [.wprjss jobs, .only production, .build plugin]
-    stage: build production

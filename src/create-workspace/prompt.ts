@@ -1,6 +1,5 @@
 import { prompt } from "inquirer";
-import { CreateWorkspaceOpts, createWorkspaceCommand } from "./program";
-import { createWorkspaceExecute } from "./execute";
+import { CreateWorkspaceOpts, createWorkspaceCommand, createWorkspaceExecute } from "./";
 import { getCommandDescriptionForPrompt, logError, caseAll } from "../utils";
 
 /**

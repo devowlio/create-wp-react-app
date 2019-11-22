@@ -1,4 +1,0 @@
-# Build production ready WP plugin
-rml build production:
-    extends: [.rml jobs, .only production, .build plugin]
-    stage: build production

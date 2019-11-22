@@ -4,6 +4,8 @@ import { readFileSync, writeFileSync } from "fs";
 
 const FOLDER_CWRA = "common/create-wp-react-app";
 
+const DEFAULT_ENCODING = "UTF-8";
+
 /**
  * Get an option from a command by long definition.
  *
@@ -33,17 +35,22 @@ function getCommandDescriptionForPrompt(c: ReturnType<typeof command>, long: Opt
  * @param replace
  */
 function searchAndReplace(files: string[], search: RegExp, replace: any) {
+    let j = 0;
     files.forEach((file) => {
         if (file.indexOf(FOLDER_CWRA) === -1) {
             let i = 0;
-            const newContent = readFileSync(file, { encoding: "UTF-8" }).replace(search, () => {
+            const newContent = readFileSync(file, { encoding: DEFAULT_ENCODING }).replace(search, () => {
                 i++;
+                j++;
                 return replace;
             });
-            writeFileSync(file, newContent, { encoding: "UTF-8" });
+            writeFileSync(file, newContent, { encoding: DEFAULT_ENCODING });
 
             if (i > 0) {
-                logSuccess(`Search (${search}) & Replace (${replace}) wrote to ${chalk.underline(file)} (${i} times)`);
+                if (j === 1) {
+                    logSuccess(`Search (${search}) & Replace (${replace}):`);
+                }
+                logSuccess(`├── ${chalk.underline(file)} (${i} times)`);
             }
         }
     });
@@ -81,6 +88,7 @@ function caseAll<T extends any>(object: T, upper: Array<keyof T>, lower: Array<k
 
 export {
     FOLDER_CWRA,
+    DEFAULT_ENCODING,
     getCommandOption,
     getCommandDescriptionForPrompt,
     searchAndReplace,

@@ -1,7 +1,0 @@
-{
-    "extends": "../../common/tsconfig.json",
-    "include": ["lib/**/*"],
-    "compilerOptions": {
-        "outDir": "types/"
-    }
-}

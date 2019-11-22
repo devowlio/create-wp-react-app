@@ -1,5 +1,5 @@
 import { command } from "commander";
-import { createPluginPrompt } from "./prompt";
+import { createPluginPrompt } from "./";
 
 type CreatePluginOpts = {
     cwd: string;
