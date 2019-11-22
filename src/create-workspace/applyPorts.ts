@@ -14,9 +14,14 @@ function applyPorts(portWp: CreateWorkspaceOpts["portWp"], portPma: CreateWorksp
     logProgress(
         `Apply ports ${chalk.underline(portWp)} (WP) and ${chalk.underline(portPma)} (PMA) for local development...`
     );
-    const portFiles = glob.sync("devops/docker-compose/docker-compose.local.yml", { cwd: createCwd, absolute: true });
-    searchAndReplace(portFiles, /"8080:80"/g, `"${portWp}:80"`);
-    searchAndReplace(portFiles, /"8079:80"/g, `"${portPma}:80"`);
+    const composeFiles = glob.sync("devops/docker-compose/docker-compose.local.yml", {
+        cwd: createCwd,
+        absolute: true
+    });
+    const shFiles = glob.sync("devops/scripts/*.sh", { cwd: createCwd, absolute: true });
+    searchAndReplace(composeFiles, /"8080:80"/g, `"${portWp}:80"`);
+    searchAndReplace(composeFiles, /"8079:80"/g, `"${portPma}:80"`);
+    searchAndReplace(shFiles, /localhost:8080/g, `localhost:${portWp}`);
 }
 
 export { applyPorts };

@@ -32,7 +32,7 @@ function applySlug(workspace: string, createPluginCwd: string, slug: string) {
     searchAndReplace(multiStarterFiles, /wp-reactjs-multi-starter/g, workspace);
 
     // i18n .pot files
-    const phpPotFolder = resolve(createPluginCwd, "src/inc/languages");
+    const phpPotFolder = resolve(createPluginCwd, "src/languages");
     const tsPotFolder = resolve(createPluginCwd, "src/public/languages");
     renameSync(resolve(phpPotFolder, "wp-reactjs-starter.pot"), resolve(phpPotFolder, slug + ".pot"));
     renameSync(resolve(tsPotFolder, "wp-reactjs-starter.pot"), resolve(tsPotFolder, slug + ".pot"));

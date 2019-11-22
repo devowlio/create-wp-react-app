@@ -41,11 +41,13 @@ function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: 
     applyPhpFunctions(createPluginCwd, input.constantPrefix);
     applySlug(root.name, createPluginCwd, input.slug);
     applyGitLabCi(createPluginCwd, input.constantPrefix);
-    applyPackageJson(createPluginCwd, input);
+    applyPackageJson(root.name, createPluginCwd, input);
     modifyRootGitLabCiInclude("add", input.cwd, input.slug);
     logSuccess(`Successfully created plugin ${input.pluginName} in ${chalk.underline(createPluginCwd)}`);
 
     if (!fromWorkspace) {
+        // TODO: Ask for add-on development
+
         logProgress("Bootstrap and link new plugin...");
         execa.sync("yarn", ["bootstrap"], { cwd: input.cwd, stdio: "inherit" });
         execa.sync("yarn", ["lerna", "link"], { cwd: input.cwd, stdio: "inherit" });
@@ -63,7 +65,6 @@ function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: 
             // First builds
             preInstallationBuilds(
                 {
-                    i18n: answers.i18n as boolean,
                     build: answers.build as boolean,
                     docs: answers.docs as boolean
                 },

@@ -1,14 +1,7 @@
 import { logProgress, logSuccess } from "../utils";
-
-import execa = require("execa");
+import execa from "execa";
 
 const PROMPT_AFTER_BOOTSTRAP = [
-    {
-        name: "i18n",
-        type: "confirm",
-        message: "Would you like to do an initial i18n generation for the new plugin (.pot files)?",
-        default: "y"
-    },
     {
         name: "build",
         type: "confirm",
@@ -30,18 +23,15 @@ const PROMPT_AFTER_BOOTSTRAP = [
  *
  * @param answers
  */
-function preInstallationBuilds(answers: { i18n: boolean; build: boolean; docs: boolean }, createPluginCwd: string) {
-    if (answers.i18n) {
-        logProgress("Start i18n generation...");
-        execa.sync("yarn", ["i18n:generate:backend"], { cwd: createPluginCwd, stdio: "inherit" });
-        execa.sync("yarn", ["i18n:generate:frontend"], { cwd: createPluginCwd, stdio: "inherit" });
-        logSuccess("Successfully generate .pot files in your plugin");
-    }
-
+function preInstallationBuilds(answers: { build: boolean; docs: boolean }, createPluginCwd: string) {
     if (answers.build) {
         logProgress("Start initial build process...");
         execa.sync("yarn", ["build"], { cwd: createPluginCwd, stdio: "inherit" });
         logSuccess("Successfully created first build");
+        logProgress("Start i18n generation...");
+        execa.sync("yarn", ["i18n:generate:backend"], { cwd: createPluginCwd, stdio: "inherit" });
+        execa.sync("yarn", ["i18n:generate:frontend"], { cwd: createPluginCwd, stdio: "inherit" });
+        logSuccess("Successfully generate .pot files in your plugin");
     }
 
     if (answers.docs) {

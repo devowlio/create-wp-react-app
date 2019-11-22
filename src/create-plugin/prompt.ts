@@ -6,11 +6,12 @@ import {
     logSuccess,
     inquirerRequiredValidate,
     caseAll,
-    FOLDER_CWRA
+    FOLDER_CWRA,
+    DEFAULT_ENCODING
 } from "../utils";
 import chalk from "chalk";
 import { resolve, join } from "path";
-import { existsSync } from "fs";
+import { existsSync, readdirSync } from "fs";
 
 /**
  * Prompt for CLI arguments which are not passed.
@@ -39,7 +40,13 @@ function createPluginPrompt(
     before?: () => Promise<void>,
     after?: (createPluginCwd: string, pluginData: CreatePluginOpts) => Promise<void>
 ) {
+    let root: any;
     const createWorkspaceCwd = cwd ? resolve(cwd) : process.cwd();
+
+    // It is coming directly from create-plugin command
+    if (!before) {
+        root = checkValidWorkspace(createWorkspaceCwd);
+    }
 
     prompt(
         [
@@ -165,22 +172,9 @@ function createPluginPrompt(
                 await before();
             }
 
-            // Get the root package
-            let root: any;
-            try {
-                root = getValidWorkspace(createWorkspaceCwd);
-
-                if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
-                    throw new Error("The template folder in common/create-wp-react-app could not be found!");
-                }
-            } catch (e) {
-                logError(e.toString());
-                logError(
-                    `You are not using the command inside a folder which was created with ${chalk.underline(
-                        "create-wp-react-app create-workspace"
-                    )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
-                );
-                createPluginCommand.help();
+            // Root can be lazy due create-workspace command
+            if (!root) {
+                root = checkValidWorkspace(createWorkspaceCwd);
             }
 
             const createPluginCwd = createPluginExecute(root, parsed, !!before);
@@ -191,6 +185,32 @@ function createPluginPrompt(
             logError(e.toString());
         }
     });
+}
+
+/**
+ * Check for valid workspace and exit if not found.
+ *
+ * @param createWorkspaceCwd
+ * @returns
+ */
+function checkValidWorkspace(createWorkspaceCwd: string) {
+    // Get the root package
+    try {
+        const root = getValidWorkspace(createWorkspaceCwd);
+
+        if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
+            throw new Error("The template folder in common/create-wp-react-app could not be found!");
+        }
+        return root;
+    } catch (e) {
+        logError(e.toString());
+        logError(
+            `You are not using the command inside a folder which was created with ${chalk.underline(
+                "create-wp-react-app create-workspace"
+            )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
+        );
+        createPluginCommand.help();
+    }
 }
 
 /**

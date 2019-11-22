@@ -46,7 +46,6 @@ function completeWorkspace(
     ]).then((answers) => {
         preInstallationBuilds(
             {
-                i18n: answers.i18n as boolean,
                 build: answers.build as boolean,
                 docs: answers.docs as boolean
             },
