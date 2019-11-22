@@ -4,7 +4,8 @@
     "description": "Create React WordPress plugin with no build configuration.",
     "scripts": {
         "build": "tsc",
-        "dev": "tsc -w"
+        "dev": "tsc -w",
+        "lint": "tslint --project ."
     },
     "keywords": [
         "wp",
@@ -68,6 +69,7 @@
         "inquirer": "^7.0.0",
         "prettier": "^1.19.1",
         "pretty-quick": "^2.0.1",
+        "terminal-link": "^2.0.0",
         "ts-node": "^8.5.2",
         "tslint": "^5.20.1",
         "tslint-config-prettier": "^1.18.0",

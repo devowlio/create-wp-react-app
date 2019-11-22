@@ -1,6 +1,6 @@
+import { prompt } from "inquirer";
 import { resolve } from "path";
-import { CreatePluginOpts, createPluginCommand } from "./program";
-import glob from "glob";
+import { CreatePluginOpts } from "./program";
 import { existsSync } from "fs";
 import {
     copyTemplates,
@@ -9,9 +9,76 @@ import {
     applyPhpFunctions,
     applySlug,
     applyGitLabCi,
-    modifyRootGitLabCiInclude
+    modifyRootGitLabCiInclude,
+    PROMPT_AFTER_BOOTSTRAP,
+    preInstallationBuilds
 } from "./";
-import { logSuccess } from "../utils";
+import { logSuccess, logProgress } from "../utils";
+import chalk from "chalk";
+import execa from "execa";
+import { applyPackageJson } from "./applyPackageJson";
+
+/**
+ * Generate a new plugin from the template. All validations are done in createPluginPrompt.
+ *
+ * @param root
+ * @param input
+ * @param fromWorkspace
+ * @returns
+ * @throws
+ */
+function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: boolean = false) {
+    const createPluginCwd = resolve(input.cwd, "plugins", input.slug);
+
+    // Strictly do not override an existing plugin!!
+    if (existsSync(createPluginCwd)) {
+        throw new Error(`You already have a plugin with slug ${input.slug}.`);
+    }
+
+    const templates = copyTemplates(createPluginCwd);
+    const appliedTemplates = applyPromptsToTemplates(createPluginCwd, templates, input);
+    applyPhpConstantsAndNamespace(createPluginCwd, appliedTemplates, input.constantPrefix, input.namespace);
+    applyPhpFunctions(createPluginCwd, input.constantPrefix);
+    applySlug(root.name, createPluginCwd, input.slug);
+    applyGitLabCi(createPluginCwd, input.constantPrefix);
+    applyPackageJson(createPluginCwd, input);
+    modifyRootGitLabCiInclude("add", input.cwd, input.slug);
+    logSuccess(`Successfully created plugin ${input.pluginName} in ${chalk.underline(createPluginCwd)}`);
+
+    if (!fromWorkspace) {
+        logProgress("Bootstrap and link new plugin...");
+        execa.sync("yarn", ["bootstrap"], { cwd: input.cwd, stdio: "inherit" });
+        execa.sync("yarn", ["lerna", "link"], { cwd: input.cwd, stdio: "inherit" });
+
+        // Start initial builds...
+        prompt([
+            ...PROMPT_AFTER_BOOTSTRAP,
+            {
+                name: "dev",
+                type: "confirm",
+                message: `Imagine all the above worked without any problem, would you like to rebuild the development environment with 'yarn docker:start' so your new plugin is visible?`,
+                default: "y"
+            }
+        ]).then((answers) => {
+            // First builds
+            preInstallationBuilds(
+                {
+                    i18n: answers.i18n as boolean,
+                    build: answers.build as boolean,
+                    docs: answers.docs as boolean
+                },
+                createPluginCwd
+            );
+
+            if (answers.dev) {
+                logProgress(`Rebuild the development environment, afterwards you can activate your new plugin...`);
+                execa("yarn", ["docker:start"], { cwd: input.cwd, stdio: "inherit" });
+            }
+        });
+    }
+
+    return createPluginCwd;
+}
 
 /* createPluginExecute(
     {
@@ -34,32 +101,5 @@ import { logSuccess } from "../utils";
         constantPrefix: "RML"
     }
 ); */
-
-/**
- * Generate a new plugin from the template. All validations are done in createPluginPrompt.
- *
- * @throws
- */
-async function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: boolean = false) {
-    const createPluginCwd = resolve(input.cwd, "plugins", input.slug);
-    const globFiles = (pattern: string) => glob.sync(pattern, { cwd: createPluginCwd, absolute: true });
-
-    // Strictly do not override an existing plugin!!
-    if (existsSync(createPluginCwd)) {
-        throw new Error(`You already have a plugin with slug ${input.slug}.`);
-    }
-
-    const templates = copyTemplates(createPluginCwd);
-    const appliedTemplates = applyPromptsToTemplates(createPluginCwd, templates, input);
-    applyPhpConstantsAndNamespace(createPluginCwd, appliedTemplates, input.constantPrefix, input.namespace);
-    applyPhpFunctions(createPluginCwd, input.constantPrefix);
-    applySlug(root.name, createPluginCwd, input.slug);
-    applyGitLabCi(createPluginCwd, input.constantPrefix);
-    modifyRootGitLabCiInclude("add", input.cwd, input.slug);
-    logSuccess(`Successfully created plugin ${input.pluginName} in ${createPluginCwd}`);
-
-    // TODO: Install new plugin (except when running create-workspace)
-    // TODO: First build (except when running create-workspace)
-}
 
 export { createPluginExecute };

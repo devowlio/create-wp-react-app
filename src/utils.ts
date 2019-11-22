@@ -35,20 +35,20 @@ function getCommandDescriptionForPrompt(c: ReturnType<typeof command>, long: Opt
  * @param replace
  */
 function searchAndReplace(files: string[], search: RegExp, replace: any) {
-    let j = 0;
+    let wroteHeader = false;
     files.forEach((file) => {
         if (file.indexOf(FOLDER_CWRA) === -1) {
             let i = 0;
             const newContent = readFileSync(file, { encoding: DEFAULT_ENCODING }).replace(search, () => {
                 i++;
-                j++;
                 return replace;
             });
             writeFileSync(file, newContent, { encoding: DEFAULT_ENCODING });
 
             if (i > 0) {
-                if (j === 1) {
+                if (!wroteHeader) {
                     logSuccess(`Search (${search}) & Replace (${replace}):`);
+                    wroteHeader = true;
                 }
                 logSuccess(`├── ${chalk.underline(file)} (${i} times)`);
             }

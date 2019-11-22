@@ -37,27 +37,9 @@ function createPluginPrompt(
         constantPrefix
     }: Partial<CreatePluginOpts>,
     before?: () => Promise<void>,
-    after?: () => Promise<void>
+    after?: (createPluginCwd: string, pluginData: CreatePluginOpts) => Promise<void>
 ) {
     const createWorkspaceCwd = cwd ? resolve(cwd) : process.cwd();
-
-    // Get the root package
-    let root: any;
-    try {
-        root = getValidWorkspace(createWorkspaceCwd);
-
-        if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
-            throw new Error("The template folder in common/create-wp-react-app could not be found!");
-        }
-    } catch (e) {
-        logError(e.toString());
-        logError(
-            `You are not using the command inside a folder which was created with ${chalk.underline(
-                "create-wp-react-app create-workspace"
-            )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
-        );
-        createPluginCommand.help();
-    }
 
     prompt(
         [
@@ -182,9 +164,28 @@ function createPluginPrompt(
             if (before) {
                 await before();
             }
-            await createPluginExecute(root, parsed, !!before);
+
+            // Get the root package
+            let root: any;
+            try {
+                root = getValidWorkspace(createWorkspaceCwd);
+
+                if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
+                    throw new Error("The template folder in common/create-wp-react-app could not be found!");
+                }
+            } catch (e) {
+                logError(e.toString());
+                logError(
+                    `You are not using the command inside a folder which was created with ${chalk.underline(
+                        "create-wp-react-app create-workspace"
+                    )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
+                );
+                createPluginCommand.help();
+            }
+
+            const createPluginCwd = createPluginExecute(root, parsed, !!before);
             if (after) {
-                await after();
+                await after(createPluginCwd, parsed);
             }
         } catch (e) {
             logError(e.toString());

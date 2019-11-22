@@ -1,3 +1,6 @@
+# Example folder with plugins (for development purposes)
+mytest
+
 # Logs
 logs
 *.log

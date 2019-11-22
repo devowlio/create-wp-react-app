@@ -1,11 +1,13 @@
 import { prompt } from "inquirer";
-import { CreateWorkspaceOpts, createWorkspaceCommand, createWorkspaceExecute } from "./";
+import { CreateWorkspaceOpts, createWorkspaceCommand, createWorkspaceExecute, checkDependencies } from "./";
 import { getCommandDescriptionForPrompt, logError, caseAll } from "../utils";
 
 /**
  * Prompt for CLI arguments which are not passed.
  */
 function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPma }: CreateWorkspaceOpts) {
+    checkDependencies();
+
     prompt(
         [
             !workspace && {
@@ -35,7 +37,7 @@ function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPm
     ).then(async (answers) => {
         try {
             const parsed = { workspace, repository, checkout, portWp, portPma, ...answers };
-            await createWorkspaceExecute(caseAll(parsed, [], ["workspace"]));
+            createWorkspaceExecute(caseAll(parsed, [], ["workspace"]));
         } catch (e) {
             logError(e.toString());
         }
