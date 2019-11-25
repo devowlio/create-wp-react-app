@@ -4,6 +4,7 @@ import { prompt } from "inquirer";
 import { logProgress, logSuccess, logError } from "../utils";
 import terminalLink from "terminal-link";
 import chalk from "chalk";
+import { CreateWorkspaceOpts } from "./program";
 
 type ProjectResult = {
     [key: string]: any;
@@ -20,9 +21,10 @@ type ProjectResult = {
  * Prompt for GitLab auth and create the repository in the given group / namespace.
  * It exits automatically if something went wrong (for example SSH check)
  *
+ * @param workspace
  * @returns `false` or `any` representing the new project
  */
-async function promptGitLab() {
+async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
     const { doGitlab } = await prompt([
         {
             name: "doGitlab",
@@ -73,29 +75,34 @@ async function promptGitLab() {
         logProgress("Loading available possible targets for the new repository...");
         const groups = (await api.Groups.all()) as any[];
         const user = (await api.Users.current()) as any;
-        const { group } = await prompt([
-            {
-                name: "group",
-                message: "Where do you want to create the repository?",
-                type: "list",
-                choices: groups
-                    .map((g) => ({
-                        name: g.full_name,
-                        value: g
-                    }))
-                    .concat([
-                        {
-                            name: "Assign to myself, " + user.username,
-                            value: ""
-                        }
-                    ])
-            }
-        ]);
+        let namespaceId: number;
+
+        if (groups && groups.length) {
+            const { group } = await prompt([
+                {
+                    name: "group",
+                    message: "Where do you want to create the repository?",
+                    type: "list",
+                    choices: groups
+                        .map((g) => ({
+                            name: g.full_name,
+                            value: g
+                        }))
+                        .concat([
+                            {
+                                name: "Assign to myself, " + user.username,
+                                value: ""
+                            }
+                        ])
+                }
+            ]);
+            namespaceId = group ? group.id : undefined;
+        }
 
         // Create the repository in the given namespace
         const project = (await api.Projects.create({
-            name: "A test",
-            namespace_id: group ? group.id : undefined,
+            name: workspace,
+            namespace_id: namespaceId,
             default_branch: "master"
         })) as ProjectResult;
         logSuccess(`Successfully created project ${chalk.underline(project.name_with_namespace)}`);

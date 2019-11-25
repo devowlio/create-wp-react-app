@@ -16,7 +16,7 @@ import { promptGitLab } from "./promptGitLab";
  */
 async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
     const createCwd = resolve(process.cwd(), input.workspace);
-    const gitlabProjectResult = await promptGitLab();
+    const gitlabProjectResult = await promptGitLab(input.workspace);
     const gitlabProject = gitlabProjectResult === false ? undefined : gitlabProjectResult;
 
     // Run create-plugin command without installation (because this is done below)
