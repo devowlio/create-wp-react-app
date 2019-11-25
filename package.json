@@ -48,13 +48,18 @@
         "endOfLine": "lf"
     },
     "dependencies": {
+        "chalk": "^3.0.0",
         "commander": "^4.0.1",
         "execa": "^3.3.0",
+        "fs-extra": "^8.1.0",
+        "gitlab": "^12.0.0",
         "glob": "^7.1.6",
+        "inquirer": "^7.0.0",
         "listr": "^0.14.2",
         "listr-input": "^0.2.0",
         "lodash": "^4.17.15",
-        "rimraf": "^3.0.0"
+        "rimraf": "^3.0.0",
+        "terminal-link": "^2.0.0"
     },
     "devDependencies": {
         "@commitlint/cli": "^8.2.0",
@@ -63,13 +68,9 @@
         "@types/fs-extra": "^8.0.1",
         "@types/inquirer": "^6.5.0",
         "@types/rimraf": "^2.0.3",
-        "chalk": "^3.0.0",
-        "fs-extra": "^8.1.0",
         "husky": "^3.1.0",
-        "inquirer": "^7.0.0",
         "prettier": "^1.19.1",
         "pretty-quick": "^2.0.1",
-        "terminal-link": "^2.0.0",
         "ts-node": "^8.5.2",
         "tslint": "^5.20.1",
         "tslint-config-prettier": "^1.18.0",

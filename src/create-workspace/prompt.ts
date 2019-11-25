@@ -5,10 +5,10 @@ import { getCommandDescriptionForPrompt, logError, caseAll } from "../utils";
 /**
  * Prompt for CLI arguments which are not passed.
  */
-function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPma }: CreateWorkspaceOpts) {
+async function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPma }: CreateWorkspaceOpts) {
     checkDependencies();
 
-    prompt(
+    const answers = await prompt(
         [
             !workspace && {
                 name: "workspace",
@@ -34,14 +34,14 @@ function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPm
                 default: 8079
             }
         ].filter(Boolean)
-    ).then(async (answers) => {
-        try {
-            const parsed = { workspace, repository, checkout, portWp, portPma, ...answers };
-            createWorkspaceExecute(caseAll(parsed, [], ["workspace"]));
-        } catch (e) {
-            logError(e.toString());
-        }
-    });
+    );
+
+    try {
+        const parsed = { workspace, repository, checkout, portWp, portPma, ...answers };
+        await createWorkspaceExecute(caseAll(parsed, [], ["workspace"]));
+    } catch (e) {
+        logError(e.toString());
+    }
 }
 
 export { createWorkspacePrompt };

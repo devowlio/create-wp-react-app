@@ -27,7 +27,7 @@ import { applyPackageJson } from "./applyPackageJson";
  * @returns
  * @throws
  */
-function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: boolean = false) {
+async function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: boolean = false) {
     const createPluginCwd = resolve(input.cwd, "plugins", input.slug);
 
     // Strictly do not override an existing plugin!!
@@ -53,7 +53,7 @@ function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: 
         execa.sync("yarn", ["lerna", "link"], { cwd: input.cwd, stdio: "inherit" });
 
         // Start initial builds...
-        prompt([
+        const answers = await prompt([
             ...PROMPT_AFTER_BOOTSTRAP,
             {
                 name: "dev",
@@ -61,21 +61,21 @@ function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: 
                 message: `Imagine all the above worked without any problem, would you like to rebuild the development environment with 'yarn docker:start' so your new plugin is visible?`,
                 default: "y"
             }
-        ]).then((answers) => {
-            // First builds
-            preInstallationBuilds(
-                {
-                    build: answers.build as boolean,
-                    docs: answers.docs as boolean
-                },
-                createPluginCwd
-            );
+        ]);
 
-            if (answers.dev) {
-                logProgress(`Rebuild the development environment, afterwards you can activate your new plugin...`);
-                execa("yarn", ["docker:start"], { cwd: input.cwd, stdio: "inherit" });
-            }
-        });
+        // First builds
+        preInstallationBuilds(
+            {
+                build: answers.build as boolean,
+                docs: answers.docs as boolean
+            },
+            createPluginCwd
+        );
+
+        if (answers.dev) {
+            logProgress(`Rebuild the development environment, afterwards you can activate your new plugin...`);
+            execa("yarn", ["docker:start"], { cwd: input.cwd, stdio: "inherit" });
+        }
     }
 
     return createPluginCwd;

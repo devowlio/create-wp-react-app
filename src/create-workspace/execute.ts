@@ -8,34 +8,32 @@ import {
     applyPorts
 } from "./";
 import { createPluginPrompt } from "../create-plugin";
-import chalk from "chalk";
+import { promptGitLab } from "./promptGitLab";
 
 /**
  * Generate a new workspace from a given repository and disconnect it.
  * Also do some garbage collection and movements for other commands.
  */
-function createWorkspaceExecute(input: CreateWorkspaceOpts) {
+async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
     const createCwd = resolve(process.cwd(), input.workspace);
-
-    console.log(
-        chalk.blue(
-            "Creating a workspace can take a while (up 5 minutes) because it installs all needed dependencies and starts a new docker environment. Do not worry, the development process is much faster ;-)"
-        )
-    );
+    const gitlabProjectResult = await promptGitLab();
+    const gitlabProject = gitlabProjectResult === false ? undefined : gitlabProjectResult;
 
     // Run create-plugin command without installation (because this is done below)
     // So we have all prompts in one flow, awesome!
-    createPluginPrompt(
+    await createPluginPrompt(
         {
             cwd: createCwd
         },
         async () => {
-            createGitFolder(input.checkout, input.repository, input.workspace, createCwd);
+            createGitFolder(input.checkout, input.repository, createCwd, gitlabProject);
             removeExamplePlugin(createCwd);
             applyWorkspaceName(input.workspace, createCwd);
             applyPorts(input.portWp, input.portPma, createCwd);
         },
-        async (createPluginCwd, pluginData) => completeWorkspace(createPluginCwd, pluginData, createCwd, input)
+        async (createPluginCwd) => {
+            await completeWorkspace(createPluginCwd, createCwd, input, gitlabProject);
+        }
     );
 }
 

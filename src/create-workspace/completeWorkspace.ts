@@ -1,5 +1,5 @@
 import execa from "execa";
-import { CreateWorkspaceOpts } from "./";
+import { CreateWorkspaceOpts, ProjectResult } from "./";
 import { logProgress, logSuccess } from "../utils";
 import { CreatePluginOpts, PROMPT_AFTER_BOOTSTRAP, preInstallationBuilds } from "../create-plugin";
 import { prompt } from "inquirer";
@@ -10,17 +10,31 @@ import terminalLink from "terminal-link";
  * The workspace and initial plugin is created, do some installation process!
  *
  * @param createPluginCwd
- * @param pluginData
  * @param createWorkspaceCwd
  * @param workspaceData
+ * @param gitlabProject
  */
-function completeWorkspace(
+async function completeWorkspace(
     createPluginCwd: string,
-    pluginData: CreatePluginOpts,
     createWorkspaceCwd: string,
-    workspaceData: CreateWorkspaceOpts
+    workspaceData: CreateWorkspaceOpts,
+    gitlabProject?: ProjectResult
 ) {
     const localhostLink = "http://localhost:" + workspaceData.portWp;
+
+    // Push changes
+    if (gitlabProject) {
+        logProgress("Push complete code to repository...");
+        execa.sync("git", ["add", "-A"], { cwd: createWorkspaceCwd, stdio: "inherit" });
+        execa.sync("git", ["commit", "-m 'chore: initial commit'"], { cwd: createWorkspaceCwd, stdio: "inherit" });
+        execa.sync("git", ["push", "origin", "develop"], { cwd: createWorkspaceCwd, stdio: "inherit" });
+        logSuccess(
+            `Successfully pushed code, see your CI/CD pipeline running ${terminalLink(
+                "here",
+                gitlabProject.web_url + "/pipelines"
+            )}`
+        );
+    }
 
     // Install dependencies
     logProgress("Bootstrap monorepo and download dependencies...");
@@ -30,7 +44,7 @@ function completeWorkspace(
     logSuccess(
         "\n\nThe workspace is now usable. For first usage it is recommend to do some first tests and builds to check all is working fine."
     );
-    prompt([
+    const answers = await prompt([
         ...PROMPT_AFTER_BOOTSTRAP,
         {
             name: "dev",
@@ -43,20 +57,20 @@ function completeWorkspace(
             )}.`,
             default: "y"
         }
-    ]).then((answers) => {
-        preInstallationBuilds(
-            {
-                build: answers.build as boolean,
-                docs: answers.docs as boolean
-            },
-            createPluginCwd
-        );
+    ]);
 
-        if (answers.dev) {
-            logProgress(`Initially start the development environment...`);
-            execa("yarn", ["docker:start"], { cwd: createWorkspaceCwd, stdio: "inherit" });
-        }
-    });
+    preInstallationBuilds(
+        {
+            build: answers.build as boolean,
+            docs: answers.docs as boolean
+        },
+        createPluginCwd
+    );
+
+    if (answers.dev) {
+        logProgress(`Initially start the development environment...`);
+        execa("yarn", ["docker:start"], { cwd: createWorkspaceCwd, stdio: "inherit" });
+    }
 }
 
 export { completeWorkspace };

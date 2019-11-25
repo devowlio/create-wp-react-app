@@ -12,7 +12,7 @@ const LINK_DOCKER_COMPOSE = "https://docs.docker.com/compose/install/";
 /**
  * Check needed dependencies and exit if something missing.
  */
-async function checkDependencies() {
+function checkDependencies() {
     let exit = false;
     let exec: ExecaSyncReturnValue;
     logProgress("Checking prerequesits...");

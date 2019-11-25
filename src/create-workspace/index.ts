@@ -6,4 +6,5 @@ export * from "./createGitFolder";
 export * from "./execute";
 export * from "./program";
 export * from "./prompt";
+export * from "./promptGitLab";
 export * from "./removeExamplePlugin";

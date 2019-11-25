@@ -20,7 +20,7 @@ import { existsSync, readdirSync } from "fs";
  * @param before If you pass a callback the plugin itself will not be installed and build because it comes from create-workspace
  * @param after
  */
-function createPluginPrompt(
+async function createPluginPrompt(
     {
         cwd,
         pluginName,
@@ -48,7 +48,7 @@ function createPluginPrompt(
         root = checkValidWorkspace(createWorkspaceCwd);
     }
 
-    prompt(
+    const answers = await prompt(
         [
             !pluginName && {
                 name: "pluginName",
@@ -60,8 +60,8 @@ function createPluginPrompt(
                 name: "slug",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--slug"),
                 type: "input",
-                default: (answers: any) => {
-                    const useThis = (answers.pluginName || pluginName) as string;
+                default: (dAnswers: any) => {
+                    const useThis = (dAnswers.pluginName || pluginName) as string;
                     if (useThis) {
                         return useThis.toLowerCase().replace(/ /g, "-");
                     }
@@ -130,8 +130,8 @@ function createPluginPrompt(
                 name: "dbPrefix",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--db-prefix"),
                 type: "input",
-                default: (answers: any) => {
-                    const useThis = (answers.optPrefix || optPrefix) as string;
+                default: (dAnswers: any) => {
+                    const useThis = (dAnswers.optPrefix || optPrefix) as string;
                     return useThis ? useThis : undefined;
                 },
                 validate: inquirerRequiredValidate
@@ -140,51 +140,51 @@ function createPluginPrompt(
                 name: "constantPrefix",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--constant-prefix"),
                 type: "input",
-                default: (answers: any) => {
-                    const useThis = (answers.optPrefix || optPrefix) as string;
+                default: (dAnswers: any) => {
+                    const useThis = (dAnswers.optPrefix || optPrefix) as string;
                     return useThis ? useThis.toUpperCase() : undefined;
                 },
                 validate: inquirerRequiredValidate
             }
         ].filter(Boolean)
-    ).then(async (answers) => {
-        try {
-            let parsed = {
-                cwd,
-                pluginName,
-                slug,
-                pluginUri,
-                pluginDesc,
-                author,
-                authorUri,
-                pluginVersion,
-                minPhp,
-                minWp,
-                namespace,
-                optPrefix,
-                dbPrefix,
-                constantPrefix,
-                ...answers
-            };
-            parsed.namespace = parsed.namespace.replace(/\\\\/g, "\\");
-            parsed = caseAll(parsed, ["constantPrefix"], ["slug", "pluginUri", "authorUri", "optPrefix", "dbPrefix"]);
-            if (before) {
-                await before();
-            }
+    );
 
-            // Root can be lazy due create-workspace command
-            if (!root) {
-                root = checkValidWorkspace(createWorkspaceCwd);
-            }
-
-            const createPluginCwd = createPluginExecute(root, parsed, !!before);
-            if (after) {
-                await after(createPluginCwd, parsed);
-            }
-        } catch (e) {
-            logError(e.toString());
+    try {
+        let parsed = {
+            cwd,
+            pluginName,
+            slug,
+            pluginUri,
+            pluginDesc,
+            author,
+            authorUri,
+            pluginVersion,
+            minPhp,
+            minWp,
+            namespace,
+            optPrefix,
+            dbPrefix,
+            constantPrefix,
+            ...answers
+        };
+        parsed.namespace = parsed.namespace.replace(/\\\\/g, "\\");
+        parsed = caseAll(parsed, ["constantPrefix"], ["slug", "pluginUri", "authorUri", "optPrefix", "dbPrefix"]);
+        if (before) {
+            await before();
         }
-    });
+
+        // Root can be lazy due create-workspace command
+        if (!root) {
+            root = checkValidWorkspace(createWorkspaceCwd);
+        }
+
+        const createPluginCwd = await createPluginExecute(root, parsed, !!before);
+        if (after) {
+            await after(createPluginCwd, parsed);
+        }
+    } catch (e) {
+        logError(e.toString());
+    }
 }
 
 /**
