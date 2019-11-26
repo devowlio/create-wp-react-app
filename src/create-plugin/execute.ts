@@ -27,7 +27,7 @@ import { applyPackageJson } from "./applyPackageJson";
  * @returns
  * @throws
  */
-async function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace: boolean = false) {
+async function createPluginExecute(root: any, input: CreatePluginOpts, fromWorkspace = false) {
     const createPluginCwd = resolve(input.cwd, "plugins", input.slug);
 
     // Strictly do not override an existing plugin!!

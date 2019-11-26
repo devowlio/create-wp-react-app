@@ -7,7 +7,6 @@ import chalk from "chalk";
 import { CreateWorkspaceOpts } from "./program";
 
 type ProjectResult = {
-    [key: string]: any;
     id: number;
     name: string;
     name_with_namespace: string;
@@ -15,6 +14,7 @@ type ProjectResult = {
     path_with_namespace: string;
     ssh_url_to_repo: string;
     web_url: string;
+    [key: string]: any;
 };
 
 /**
@@ -102,8 +102,8 @@ async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
         // Create the repository in the given namespace
         const project = (await api.Projects.create({
             name: workspace,
-            namespace_id: namespaceId,
-            default_branch: "master"
+            namespace_id: namespaceId, // eslint-disable-line @typescript-eslint/camelcase
+            default_branch: "master" // eslint-disable-line @typescript-eslint/camelcase
         })) as ProjectResult;
         logSuccess(`Successfully created project ${chalk.underline(project.name_with_namespace)}`);
 

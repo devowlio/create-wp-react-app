@@ -5,7 +5,7 @@
     "scripts": {
         "build": "tsc",
         "dev": "tsc -w",
-        "lint": "tslint --project ."
+        "lint": "eslint \"src/**/*.ts\""
     },
     "keywords": [
         "wp",
@@ -68,13 +68,15 @@
         "@types/fs-extra": "^8.0.1",
         "@types/inquirer": "^6.5.0",
         "@types/rimraf": "^2.0.3",
+        "@typescript-eslint/eslint-plugin": "^2.9.0",
+        "@typescript-eslint/parser": "^2.9.0",
+        "eslint": "^6.7.1",
+        "eslint-config-prettier": "^6.7.0",
+        "eslint-plugin-prettier": "^3.1.1",
         "husky": "^3.1.0",
         "prettier": "^1.19.1",
         "pretty-quick": "^2.0.1",
         "ts-node": "^8.5.2",
-        "tslint": "^5.20.1",
-        "tslint-config-prettier": "^1.18.0",
-        "tslint-react": "^4.1.0",
         "typescript": "^3.7.2",
         "zen-observable": "^0.8.14"
     }

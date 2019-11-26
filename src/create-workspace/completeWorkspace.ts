@@ -1,7 +1,7 @@
 import execa from "execa";
 import { CreateWorkspaceOpts, ProjectResult } from "./";
 import { logProgress, logSuccess } from "../utils";
-import { CreatePluginOpts, PROMPT_AFTER_BOOTSTRAP, preInstallationBuilds } from "../create-plugin";
+import { PROMPT_AFTER_BOOTSTRAP, preInstallationBuilds } from "../create-plugin";
 import { prompt } from "inquirer";
 import chalk from "chalk";
 import terminalLink from "terminal-link";

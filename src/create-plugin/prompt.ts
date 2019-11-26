@@ -6,12 +6,63 @@ import {
     logSuccess,
     inquirerRequiredValidate,
     caseAll,
-    FOLDER_CWRA,
-    DEFAULT_ENCODING
+    FOLDER_CWRA
 } from "../utils";
 import chalk from "chalk";
 import { resolve, join } from "path";
-import { existsSync, readdirSync } from "fs";
+import { existsSync } from "fs";
+
+/**
+ * Get a valid workspace package.json content.
+ *
+ * @param cwd
+ * @returns package.json content of the root
+ * @throws
+ */
+function getValidWorkspace(cwd: string) {
+    const json = require(join(cwd, "package.json")); // eslint-disable-line @typescript-eslint/no-var-requires
+    logSuccess(`Successfully found ${chalk.underline(json.name)} as root project!`);
+
+    if (!json.private) {
+        throw new Error("This project is not private. Yarn root workspaces must be private!");
+    }
+
+    if (!json.workspaces) {
+        throw new Error("This project has no workspaces defined.");
+    }
+
+    if (JSON.stringify(json.workspaces).indexOf("plugins/*") === -1) {
+        throw new Error("This project has no plugins/* workspaces defined.");
+    }
+
+    return json;
+}
+
+/**
+ * Check for valid workspace and exit if not found.
+ *
+ * @param createWorkspaceCwd
+ * @returns
+ */
+function checkValidWorkspace(createWorkspaceCwd: string) {
+    // Get the root package
+    try {
+        const root = getValidWorkspace(createWorkspaceCwd);
+
+        if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
+            throw new Error("The template folder in common/create-wp-react-app could not be found!");
+        }
+        return root;
+    } catch (e) {
+        logError(e.toString());
+        logError(
+            `You are not using the command inside a folder which was created with ${chalk.underline(
+                "create-wp-react-app create-workspace"
+            )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
+        );
+        createPluginCommand.help();
+    }
+}
 
 /**
  * Prompt for CLI arguments which are not passed.
@@ -185,58 +236,6 @@ async function createPluginPrompt(
     } catch (e) {
         logError(e.toString());
     }
-}
-
-/**
- * Check for valid workspace and exit if not found.
- *
- * @param createWorkspaceCwd
- * @returns
- */
-function checkValidWorkspace(createWorkspaceCwd: string) {
-    // Get the root package
-    try {
-        const root = getValidWorkspace(createWorkspaceCwd);
-
-        if (!existsSync(resolve(createWorkspaceCwd, FOLDER_CWRA, "template"))) {
-            throw new Error("The template folder in common/create-wp-react-app could not be found!");
-        }
-        return root;
-    } catch (e) {
-        logError(e.toString());
-        logError(
-            `You are not using the command inside a folder which was created with ${chalk.underline(
-                "create-wp-react-app create-workspace"
-            )}. Navigate to that folder or use the ${chalk.underline("--cwd")} argument.`
-        );
-        createPluginCommand.help();
-    }
-}
-
-/**
- * Get a valid workspace package.json content.
- *
- * @param cwd
- * @returns package.json content of the root
- * @throws
- */
-function getValidWorkspace(cwd: string) {
-    const json = require(join(cwd, "package.json"));
-    logSuccess(`Successfully found ${chalk.underline(json.name)} as root project!`);
-
-    if (!json.private) {
-        throw new Error("This project is not private. Yarn root workspaces must be private!");
-    }
-
-    if (!json.workspaces) {
-        throw new Error("This project has no workspaces defined.");
-    }
-
-    if (JSON.stringify(json.workspaces).indexOf("plugins/*") === -1) {
-        throw new Error("This project has no plugins/* workspaces defined.");
-    }
-
-    return json;
 }
 
 export { createPluginPrompt };

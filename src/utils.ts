@@ -6,6 +6,10 @@ const FOLDER_CWRA = "common/create-wp-react-app";
 
 const DEFAULT_ENCODING = "UTF-8";
 
+const logProgress = (text: string) => console.log(chalk.black.bgCyan(text));
+const logSuccess = (text: string) => console.log(chalk.black.green(text));
+const logError = (text: string) => console.log(chalk.red(text));
+
 /**
  * Get an option from a command by long definition.
  *
@@ -56,10 +60,6 @@ function searchAndReplace(files: string[], search: RegExp, replace: any) {
     });
 }
 
-const logProgress = (text: string) => console.log(chalk.black.bgCyan(text));
-const logSuccess = (text: string) => console.log(chalk.black.green(text));
-const logError = (text: string) => console.log(chalk.red(text));
-
 /**
  * Return an error message when the given input is empty.
  *
@@ -87,14 +87,14 @@ function caseAll<T extends any>(object: T, upper: Array<keyof T>, lower: Array<k
 }
 
 export {
+    logProgress,
+    logSuccess,
+    logError,
     FOLDER_CWRA,
     DEFAULT_ENCODING,
     getCommandOption,
     getCommandDescriptionForPrompt,
     searchAndReplace,
-    logProgress,
-    logSuccess,
-    logError,
     inquirerRequiredValidate,
     caseAll
 };

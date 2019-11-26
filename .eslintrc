@@ -1,0 +1,36 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true
+    },
+    "extends": [
+        "eslint:recommended",
+        "prettier",
+        "plugin:prettier/recommended",
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaFeatures": {
+            "jsx": true
+        },
+        "ecmaVersion": 2018,
+        "sourceType": "module"
+    },
+    "plugins": ["@typescript-eslint"],
+    "rules": {
+        "one-var": ["error", "never"]
+    },
+    "overrides": [
+        {
+            "files": ["**/*.{tsx,ts}"],
+            "rules": {
+                "@typescript-eslint/no-explicit-any": 0,
+                "@typescript-eslint/explicit-function-return-type": 0,
+                "@typescript-eslint/ban-ts-ignore": 0,
+                "@typescript-eslint/member-ordering": "error"
+            }
+        }
+    ]
+}

@@ -22,7 +22,7 @@ function applyPhpConstantsAndNamespace(
     logProgress("Get and apply all your PHP constants to the *.php files...");
     // Find constants
     let m;
-    const regex = /define\(\'([^\']+)/g;
+    const regex = /define\('([^']+)/g;
     const constantList: string[] = [];
     // tslint:disable-next-line: no-conditional-assignment
     while ((m = regex.exec(appliedTemplates.indexPhpContent)) !== null) {
