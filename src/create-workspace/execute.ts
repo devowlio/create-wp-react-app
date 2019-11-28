@@ -5,10 +5,11 @@ import {
     completeWorkspace,
     removeExamplePlugin,
     applyWorkspaceName,
-    applyPorts
+    applyPorts,
+    promptGitLab,
+    ProjectResult
 } from "./";
 import { createPluginPrompt } from "../create-plugin";
-import { promptGitLab } from "./promptGitLab";
 
 /**
  * Generate a new workspace from a given repository and disconnect it.
@@ -16,8 +17,8 @@ import { promptGitLab } from "./promptGitLab";
  */
 async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
     const createCwd = resolve(process.cwd(), input.workspace);
-    const gitlabProjectResult = await promptGitLab(input.workspace);
-    const gitlabProject = gitlabProjectResult === false ? undefined : gitlabProjectResult;
+    const gitlabProjectCreator = await promptGitLab(input.workspace);
+    let gitLabProject: ProjectResult;
 
     // Run create-plugin command without installation (because this is done below)
     // So we have all prompts in one flow, awesome!
@@ -26,13 +27,16 @@ async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
             cwd: createCwd
         },
         async () => {
-            createGitFolder(input.checkout, input.repository, createCwd, gitlabProject);
+            if (gitlabProjectCreator !== false) {
+                gitLabProject = await gitlabProjectCreator();
+            }
+            createGitFolder(input.checkout, input.repository, createCwd, gitLabProject);
             removeExamplePlugin(createCwd);
             applyWorkspaceName(input.workspace, createCwd);
             applyPorts(input.portWp, input.portPma, createCwd);
         },
         async (createPluginCwd) => {
-            await completeWorkspace(createPluginCwd, createCwd, input, gitlabProject);
+            await completeWorkspace(createPluginCwd, createCwd, input, gitLabProject);
         }
     );
 }

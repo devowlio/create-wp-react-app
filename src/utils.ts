@@ -1,6 +1,8 @@
+import execa from "execa";
 import chalk from "chalk";
 import { command, Option } from "commander";
 import { readFileSync, writeFileSync } from "fs";
+import { URL } from "url";
 
 const FOLDER_CWRA = "common/create-wp-react-app";
 
@@ -86,6 +88,63 @@ function caseAll<T extends any>(object: T, upper: Array<keyof T>, lower: Array<k
     return object;
 }
 
+/**
+ * Get a git config by parameter.
+ *
+ * @param param
+ * @returns
+ */
+function getGitConfig(param: string) {
+    try {
+        return execa.sync("git", ["config", "--get", param]).stdout;
+    } catch (e) {
+        return "";
+    }
+}
+
+/**
+ * Convert a slug like "my-plugin" to "myPlugin".
+ *
+ * @param slug
+ * @param firstUc
+ * @returns
+ */
+function slugCamelCase(slug: string, firstUc = false) {
+    const result = slug.replace(/-([a-z])/g, (g) => g[1].toUpperCase());
+    return firstUc ? result.charAt(0).toUpperCase() + result.slice(1) : result;
+}
+
+/**
+ * Checks if a given version is a valid semver.
+ *
+ * @param version
+ * @param errorAsString
+ * @returns
+ * @see https://github.com/semver/semver/issues/232
+ */
+function isValidSemver(version: string, errorAsString = false) {
+    const valid = /^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*)(\.(0|[1-9]\d*|\d*[a-zA-Z-][0-9a-zA-Z-]*))*)?(\+[0-9a-zA-Z-]+(\.[0-9a-zA-Z-]+)*)?$/.test(
+        version
+    );
+    return valid ? true : errorAsString ? "This is not a valid version." : false;
+}
+
+/**
+ * Checks if the given url is valid.
+ *
+ * @param url
+ * @param errorAsString
+ * @returns
+ */
+function isValidUrl(url: string, errorAsString = false) {
+    try {
+        new URL(url);
+        return true;
+    } catch (e) {
+        return errorAsString ? "This is not a valid URL" : false;
+    }
+}
+
 export {
     logProgress,
     logSuccess,
@@ -96,5 +155,9 @@ export {
     getCommandDescriptionForPrompt,
     searchAndReplace,
     inquirerRequiredValidate,
-    caseAll
+    caseAll,
+    getGitConfig,
+    slugCamelCase,
+    isValidSemver,
+    isValidUrl
 };

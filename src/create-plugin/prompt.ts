@@ -6,11 +6,16 @@ import {
     logSuccess,
     inquirerRequiredValidate,
     caseAll,
-    FOLDER_CWRA
+    FOLDER_CWRA,
+    slugCamelCase,
+    getGitConfig,
+    isValidSemver,
+    isValidUrl
 } from "../utils";
 import chalk from "chalk";
 import { resolve, join } from "path";
 import { existsSync } from "fs";
+import slugify from "slugify";
 
 /**
  * Get a valid workspace package.json content.
@@ -99,6 +104,8 @@ async function createPluginPrompt(
         root = checkValidWorkspace(createWorkspaceCwd);
     }
 
+    const gitName = getGitConfig("user.name");
+
     const answers = await prompt(
         [
             !pluginName && {
@@ -113,23 +120,20 @@ async function createPluginPrompt(
                 type: "input",
                 default: (dAnswers: any) => {
                     const useThis = (dAnswers.pluginName || pluginName) as string;
-                    if (useThis) {
-                        return useThis.toLowerCase().replace(/ /g, "-");
-                    }
-                    return undefined;
+                    return useThis
+                        ? slugify(useThis, {
+                              lower: true
+                          }).replace(/^wp-/, "")
+                        : undefined;
                 },
-                validate: (value: string) => {
-                    if (/^[A-Za-z0-9-_]+$/.test(value)) {
-                        return true;
-                    }
-
-                    return "Your plugin slug should only contain [A-Za-z0-9-_]";
-                }
+                validate: (value: string) =>
+                    /^[A-Za-z0-9-_]+$/.test(value) ? true : "Your plugin slug should only contain [A-Za-z0-9-_]."
             },
             !pluginUri && {
                 name: "pluginUri",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--plugin-uri"),
-                type: "input"
+                type: "input",
+                validate: (value: string) => (value ? isValidUrl(value, true) : true)
             },
             !pluginDesc && {
                 name: "pluginDesc",
@@ -140,62 +144,113 @@ async function createPluginPrompt(
                 name: "author",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--author"),
                 type: "input",
-                validate: inquirerRequiredValidate
+                validate: inquirerRequiredValidate,
+                default: gitName
             },
             !authorUri && {
                 name: "authorUri",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--author-uri"),
-                type: "input"
+                type: "input",
+                validate: (value: string) => (value ? isValidUrl(value, true) : true)
             },
             !pluginVersion && {
                 name: "pluginVersion",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--plugin-version"),
                 type: "input",
-                default: "1.0.0"
+                default: "1.0.0",
+                validate: (value: string) => isValidSemver(value, true)
             },
             !minPhp && {
                 name: "minPhp",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--min-php"),
                 type: "input",
-                default: "7.0"
+                default: "7.0.0",
+                validate: (value: string) => isValidSemver(value, true)
             },
             !minWp && {
                 name: "minWp",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--min-wp"),
                 type: "input",
-                default: "5.2"
+                default: "5.2.0",
+                validate: (value: string) => isValidSemver(value, true)
             },
             !namespace && {
                 name: "namespace",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--namespace"),
                 type: "input",
-                validate: inquirerRequiredValidate
+                validate: (value: string) => {
+                    const required = inquirerRequiredValidate(value);
+                    if (required !== true) {
+                        return required;
+                    }
+                    return /^[^\\0-9][A-Za-z_\\]+$/.test(value) ? true : "This is not a valid PHP namespace.";
+                },
+                default: (dAnswers: any) => {
+                    const useThis = (dAnswers.author || author) as string;
+                    const useSlug = (dAnswers.slug || slug) as string;
+                    return useThis && useSlug
+                        ? slugCamelCase(
+                              slugify(useThis, {
+                                  lower: true
+                              }),
+                              true
+                          ) +
+                              "\\" +
+                              slugCamelCase(useSlug, true)
+                        : undefined;
+                }
             },
             !optPrefix && {
                 name: "optPrefix",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--opt-prefix"),
                 type: "input",
-                validate: inquirerRequiredValidate
+                validate: (value: string) => {
+                    const required = inquirerRequiredValidate(value);
+                    if (required !== true) {
+                        return required;
+                    }
+                    return /^[A-Za-z_]+$/.test(value) ? true : "This is not a valid option prefix.";
+                },
+                default: (dAnswers: any) => {
+                    const result = ((dAnswers.slug || slug) as string).replace(/-/g, "_");
+                    const availableFirstLetters = result.match(/_(.)/g);
+                    if (availableFirstLetters.length > 1) {
+                        return result.charAt(0) + availableFirstLetters.map((o) => o.slice(1)).join("");
+                    }
+                    return result;
+                }
             },
             !dbPrefix && {
                 name: "dbPrefix",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--db-prefix"),
                 type: "input",
+                validate: (value: string) => {
+                    const required = inquirerRequiredValidate(value);
+                    if (required !== true) {
+                        return required;
+                    }
+                    return /^[A-Za-z_]+$/.test(value) ? true : "This is not a valid database table prefix.";
+                },
                 default: (dAnswers: any) => {
                     const useThis = (dAnswers.optPrefix || optPrefix) as string;
-                    return useThis ? useThis : undefined;
-                },
-                validate: inquirerRequiredValidate
+                    return useThis ? useThis.replace(/-/g, "_").replace(/^wp_/, "") : undefined;
+                }
             },
             !constantPrefix && {
                 name: "constantPrefix",
                 message: getCommandDescriptionForPrompt(createPluginCommand, "--constant-prefix"),
                 type: "input",
+                validate: (value: string) => {
+                    const required = inquirerRequiredValidate(value);
+                    if (required !== true) {
+                        return required;
+                    }
+                    return /^[A-Za-z_]+$/.test(value) ? true : "This is not a valid constant prefix.";
+                },
                 default: (dAnswers: any) => {
                     const useThis = (dAnswers.optPrefix || optPrefix) as string;
-                    return useThis ? useThis.toUpperCase() : undefined;
-                },
-                validate: inquirerRequiredValidate
+                    return useThis ? useThis.toUpperCase().replace(/-/g, "_") : undefined;
+                }
             }
         ].filter(Boolean)
     );

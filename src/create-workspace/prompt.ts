@@ -1,6 +1,6 @@
 import { prompt } from "inquirer";
 import { CreateWorkspaceOpts, createWorkspaceCommand, createWorkspaceExecute, checkDependencies } from "./";
-import { getCommandDescriptionForPrompt, logError, caseAll } from "../utils";
+import { getCommandDescriptionForPrompt, logError, caseAll, inquirerRequiredValidate } from "../utils";
 
 /**
  * Prompt for CLI arguments which are not passed.
@@ -15,7 +15,7 @@ async function createWorkspacePrompt({ workspace, repository, checkout, portWp, 
                 message: getCommandDescriptionForPrompt(createWorkspaceCommand, "--workspace"),
                 type: "input",
                 validate: (value: string) => {
-                    if (/^[A-Za-z0-9-_]+$/.test(value)) {
+                    if (value && /^[A-Za-z0-9-_]+$/.test(value)) {
                         return true;
                     }
                     return "Your workspace name should only contain [A-Za-z0-9-_]";
@@ -25,13 +25,23 @@ async function createWorkspacePrompt({ workspace, repository, checkout, portWp, 
                 name: "portWp",
                 message: getCommandDescriptionForPrompt(createWorkspaceCommand, "--port-wp"),
                 type: "number",
-                default: 8080
+                default: 8080,
+                validate: inquirerRequiredValidate
             },
             !portPma && {
                 name: "portPma",
                 message: getCommandDescriptionForPrompt(createWorkspaceCommand, "--port-pma"),
                 type: "number",
-                default: 8079
+                default: (answers: any) => {
+                    const useThis = (answers.portWp || +portWp) as number;
+                    return useThis > 0 ? useThis + 1 : 8079;
+                },
+                validate: (value: number, answers: any) => {
+                    if (value === (answers.portWp || +portWp)) {
+                        return "You can not use the port twice.";
+                    }
+                    return true;
+                }
             }
         ].filter(Boolean)
     );

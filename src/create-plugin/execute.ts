@@ -58,7 +58,9 @@ async function createPluginExecute(root: any, input: CreatePluginOpts, fromWorks
             {
                 name: "dev",
                 type: "confirm",
-                message: `Imagine all the above worked without any problem, would you like to rebuild the development environment with 'yarn docker:start' so your new plugin is visible?`,
+                message: `Would you like to rebuild the development environment with ${chalk.underline(
+                    "yarn docker:start"
+                )} so your new plugin is visible?`,
                 default: "y"
             }
         ]);

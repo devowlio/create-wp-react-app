@@ -1,7 +1,7 @@
 import execa from "execa";
 import { Gitlab } from "gitlab";
 import { prompt } from "inquirer";
-import { logProgress, logSuccess, logError } from "../utils";
+import { logProgress, logSuccess, logError, isValidUrl, inquirerRequiredValidate } from "../utils";
 import terminalLink from "terminal-link";
 import chalk from "chalk";
 import { CreateWorkspaceOpts } from "./program";
@@ -38,17 +38,19 @@ async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
             {
                 name: "host",
                 type: "input",
-                message: "Please provide your GitLab instance URL",
-                default: process.env.GITLAB_HOST || "https://gitlab.com"
+                message: "What's your GitLab instance URL?",
+                default: process.env.GITLAB_HOST || "https://gitlab.com",
+                validate: (value: string) => isValidUrl(value, true)
             },
             {
                 name: "token",
                 type: "input",
-                message: `Your ${terminalLink(
+                message: `What's your ${terminalLink(
                     "personal token",
                     "https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
-                )}`,
-                default: process.env.GITLAB_TOKEN
+                )} (click the link to learn how to obtain a token; create with ${chalk.underline("api")} scope)?`,
+                default: process.env.GITLAB_TOKEN,
+                validate: inquirerRequiredValidate
             }
         ]);
 
@@ -81,7 +83,7 @@ async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
             const { group } = await prompt([
                 {
                     name: "group",
-                    message: "Where do you want to create the repository?",
+                    message: "Where in GitLab (Group) do you want to create the repository?",
                     type: "list",
                     choices: groups
                         .map((g) => ({
@@ -99,19 +101,28 @@ async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
             namespaceId = group ? group.id : undefined;
         }
 
-        // Create the repository in the given namespace
-        const project = (await api.Projects.create({
-            name: workspace,
-            namespace_id: namespaceId, // eslint-disable-line @typescript-eslint/camelcase
-            default_branch: "master" // eslint-disable-line @typescript-eslint/camelcase
-        })) as ProjectResult;
-        logSuccess(`Successfully created project ${chalk.underline(project.name_with_namespace)}`);
+        /**
+         * Make the creation lazy by a closure function.
+         */
+        const creator = async () => {
+            // Create the repository in the given namespace
+            logProgress("Create GitLab project...");
+            const project = (await api.Projects.create({
+                name: workspace,
+                namespace_id: namespaceId // eslint-disable-line @typescript-eslint/camelcase
+            })) as ProjectResult;
+            logSuccess(`Successfully created project ${chalk.underline(project.name_with_namespace)}`);
 
-        // Create the protected develop branch
-        logProgress("Setup repository...");
-        await api.Branches.create(project.id, "develop", "master");
-        logSuccess(`Successfully created branch ${chalk.underline("develop")}`);
-        return project;
+            // Create the protected develop branch
+            logProgress("Setup repository...");
+            await api.Branches.create(project.id, "develop", "master");
+            await api.Projects.edit(project.id, {
+                default_branch: "develop" // eslint-disable-line @typescript-eslint/camelcase
+            });
+            logSuccess(`Successfully created default branch ${chalk.underline("develop")}`);
+            return project;
+        };
+        return creator;
     }
 
     return false;

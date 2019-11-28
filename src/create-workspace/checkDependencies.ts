@@ -5,7 +5,6 @@ import terminalLink from "terminal-link";
 
 const LINK_YARN = "https://yarnpkg.com/docs/install/";
 const LINK_COMPOSER = "https://getcomposer.org/";
-const LINK_WP_CLI = "https://wp-cli.org/";
 const LINK_DOCKER = "https://docs.docker.com/install/";
 const LINK_DOCKER_COMPOSE = "https://docs.docker.com/compose/install/";
 
@@ -43,20 +42,6 @@ function checkDependencies() {
             `├── Missing ${chalk.underline("composer")} (PHP dependency manager), install it now: ${terminalLink(
                 LINK_COMPOSER,
                 LINK_COMPOSER
-            )}`
-        );
-    }
-
-    // WP CLI
-    try {
-        exec = execa.sync("wp", ["--version"]);
-        logSuccess("├── " + exec.stdout);
-    } catch (e) {
-        exit = true;
-        logError(
-            `├── Missing ${chalk.underline("wp")} (WordPress command line interface), install it now: ${terminalLink(
-                LINK_WP_CLI,
-                LINK_WP_CLI
             )}`
         );
     }

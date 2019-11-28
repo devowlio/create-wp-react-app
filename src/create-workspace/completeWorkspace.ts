@@ -49,7 +49,7 @@ async function completeWorkspace(
         {
             name: "dev",
             type: "confirm",
-            message: `Imagine all the above worked without any problem, would you like to start the development environment ${terminalLink(
+            message: `Would you like to start the development environment ${terminalLink(
                 localhostLink,
                 localhostLink
             )}? If you pass 'yes' this shell keeps open because it starts in 'watch' mode. You can safely close the shell then and start it again with ${chalk.underline(
