@@ -25,6 +25,10 @@ type ProjectResult = {
  * @returns `false` or `any` representing the new project
  */
 async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
+    if (process.env.SKIP_PROMPT) {
+        return false;
+    }
+
     const { doGitlab } = await prompt([
         {
             name: "doGitlab",

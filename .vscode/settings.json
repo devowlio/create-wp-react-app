@@ -4,6 +4,14 @@
     "editor.useTabStops": false,
     "editor.formatOnSave": false,
     "editor.tabSize": 4,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.svn": true,
+        "**/.hg": true,
+        "**/CVS": true,
+        "**/.DS_Store": true,
+        "my-awesomeness": true // Hide because intellisense of VSCode can be very problematic in development
+    },
     "[typescript]": {
         "editor.formatOnSave": true
     },

@@ -1,4 +1,6 @@
 export * from "./applyPorts";
+export * from "./applyPhpUtils";
+export * from "./runThirdPartyLicenses";
 export * from "./applyWorkspaceName";
 export * from "./checkDependencies";
 export * from "./completeWorkspace";

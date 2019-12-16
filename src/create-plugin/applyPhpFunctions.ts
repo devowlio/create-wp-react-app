@@ -13,7 +13,7 @@ import { logProgress, searchAndReplace } from "../utils";
 function applyPhpFunctions(createPluginCwd: string, constantPrefix: string) {
     const functionPrefix = constantPrefix.toLowerCase();
     logProgress(`Find PHP functions and replace with ${chalk.underline(functionPrefix)} prefix...`);
-    const phpFiles = glob.sync("**/*.php", { cwd: resolve(createPluginCwd, "src"), absolute: true });
+    const phpFiles = glob.sync("src/**/*.php", { cwd: createPluginCwd, absolute: true });
     searchAndReplace(phpFiles, /wprjss_skip/g, functionPrefix + "_skip");
 }
 

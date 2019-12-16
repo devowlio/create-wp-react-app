@@ -14,8 +14,8 @@ function applyWorkspaceName(workspace: CreateWorkspaceOpts["workspace"], createC
     const globFiles = (pattern: string) => glob.sync(pattern, { cwd: createCwd, absolute: true });
     const workspaceFiles = [
         ...globFiles(".gitlab-ci.yml"),
-        ...globFiles("**/package.json"),
-        ...globFiles("packages/utils/README.md")
+        ...globFiles("package.json"),
+        ...globFiles("{plugins,packages}/*/package.json")
     ];
     searchAndReplace(workspaceFiles, /wp-reactjs-multi-starter/g, workspace);
     logSuccess(`Workspace is now branded as ${chalk.underline(workspace)}`);

@@ -7,6 +7,7 @@ const LINK_YARN = "https://yarnpkg.com/docs/install/";
 const LINK_COMPOSER = "https://getcomposer.org/";
 const LINK_DOCKER = "https://docs.docker.com/install/";
 const LINK_DOCKER_COMPOSE = "https://docs.docker.com/compose/install/";
+const LINK_WP_CLI = "https://wp-cli.org/#installing";
 
 /**
  * Check needed dependencies and exit if something missing.
@@ -72,6 +73,20 @@ function checkDependencies() {
             )} (connect multiple containerized applications within a network), install it now: ${terminalLink(
                 LINK_DOCKER_COMPOSE,
                 LINK_DOCKER_COMPOSE
+            )}`
+        );
+    }
+
+    // WP CLI
+    try {
+        exec = execa.sync("wp", ["--version"]);
+        logSuccess("├── " + exec.stdout);
+    } catch (e) {
+        exit = true;
+        logError(
+            `├── Missing ${chalk.underline("wp-cli")} (WordPress CLI), install it now: ${terminalLink(
+                LINK_WP_CLI,
+                LINK_WP_CLI
             )}`
         );
     }

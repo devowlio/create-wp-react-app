@@ -5,13 +5,13 @@ import { readFileSync, writeFileSync } from "fs";
 
 /**
  * Modify the anchor content of the root .gitlab-ci.yml file to add or
- * remove a plugin's CI configuration.
+ * remove a plugin's or package CI configuration.
  *
  * @param action
  * @param cwd
  * @param slug
  */
-function modifyRootGitLabCiInclude(action: "add" | "remove", cwd: string, slug: string) {
+function modifyRootGitLabCiInclude(action: "add" | "remove", cwd: string, slug: string, type: "plugins" | "packages") {
     logProgress(`Modify root .gitlab-ci.yml and ${action} include ${chalk.underline(slug)}...`);
     const path = resolve(cwd, ".gitlab-ci.yml");
     let content = readFileSync(path, { encoding: DEFAULT_ENCODING });
@@ -20,9 +20,9 @@ function modifyRootGitLabCiInclude(action: "add" | "remove", cwd: string, slug: 
         (match, inner: string, spaceBefore: string) => {
             let newLines = inner.split("\n").filter(Boolean);
             if (action === "remove") {
-                newLines = newLines.filter((line) => line.indexOf("- /plugins/" + slug + "/") === -1);
+                newLines = newLines.filter((line) => line.indexOf("- /" + type + "/" + slug + "/") === -1);
             } else {
-                newLines.push(spaceBefore + "- /plugins/" + slug + "/devops/.gitlab/.gitlab-ci.yml");
+                newLines.push(spaceBefore + "- /" + type + "/" + slug + "/devops/.gitlab/.gitlab-ci.yml");
             }
             return `# create-wp-react-app -->\n${newLines.join("\n")}\n${spaceBefore}# <-- create-wp-react-app`;
         }

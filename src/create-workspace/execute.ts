@@ -3,6 +3,7 @@ import {
     CreateWorkspaceOpts,
     createGitFolder,
     completeWorkspace,
+    applyPhpUtils,
     removeExamplePlugin,
     applyWorkspaceName,
     applyPorts,
@@ -10,6 +11,9 @@ import {
     ProjectResult
 } from "./";
 import { createPluginPrompt } from "../create-plugin";
+import { applyName } from "../create-package";
+import { generateLicenseFile } from "../utils";
+import { applyPackageJson } from "../misc";
 
 /**
  * Generate a new workspace from a given repository and disconnect it.
@@ -35,7 +39,20 @@ async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
             applyWorkspaceName(input.workspace, createCwd);
             applyPorts(input.portWp, input.portPma, createCwd);
         },
-        async (createPluginCwd) => {
+        async (createPluginCwd, pluginData) => {
+            // Brand first package: utils
+            const utilsPath = resolve(createCwd, "packages/utils");
+            applyPhpUtils(pluginData.namespace, createPluginCwd);
+            applyName(utilsPath, "utils");
+            applyPackageJson(input.workspace, utilsPath, {
+                author: pluginData.author,
+                description: "Utility functionality for all your WordPress plugins.",
+                homepage: pluginData.authorUri,
+                version: "1.0.0"
+            });
+            generateLicenseFile(utilsPath, pluginData.author, pluginData.pluginDesc);
+
+            // Complete
             await completeWorkspace(createPluginCwd, createCwd, input, gitLabProject);
         }
     );

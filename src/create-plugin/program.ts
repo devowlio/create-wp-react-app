@@ -22,7 +22,7 @@ const createPluginCommand = command("create-plugin")
     .description("Create a new plugin within your workspace which you created previously.")
     .option("--cwd <value>", "The path to the workspace where the plugin should be created", process.cwd())
     .option("--plugin-name <value>", "How should your plugin be named?")
-    .option("--slug <value>", "What's the unique plugin slug (similar to folder name inside wp-content/plugins)?")
+    .option("--slug <value>", "What's the plugin slug (similar to folder name inside wp-content/plugins)?")
     .option("--plugin-uri <value>", "What's your plugins' homepage URL?")
     .option("--plugin-desc <value>", "Give a one-line plugin description?")
     .option("--author <value>", "Who is the plugin author (e. g. your wordpress.org username)?")
@@ -36,10 +36,10 @@ const createPluginCommand = command("create-plugin")
         "--min-wp <value>",
         "What's the minimum required WordPress version (minimum of 5.2 required for the boilerplate)?"
     )
-    .option("--namespace <value>", "What's the unique PHP Namespace (e. g 'MatthiasWeb\\WPRJSS')?")
-    .option("--opt-prefix <value>", "What's the unique WordPress options (wp_options) names prefix (e. g 'wprjss')?")
-    .option("--db-prefix <value>", "What's the unique WordPress database tables prefix (e. g. 'wprjss')?")
-    .option("--constant-prefix <value>", "What's the unique PHP constants prefix (e. g. 'WPRJSS')?")
+    .option("--namespace <value>", "What's the PHP Namespace (e. g 'MatthiasWeb\\WPRJSS')?")
+    .option("--opt-prefix <value>", "What's the WordPress options (wp_options) names prefix (e. g 'wprjss')?")
+    .option("--db-prefix <value>", "What's the WordPress database tables prefix (e. g. 'wprjss')?")
+    .option("--constant-prefix <value>", "What's the PHP constants prefix (e. g. 'WPRJSS')?")
     .action((args) => createPluginPrompt(args));
 
 export { CreatePluginOpts, createPluginCommand };

@@ -1,9 +1,8 @@
 import execa from "execa";
-import { CreateWorkspaceOpts, ProjectResult } from "./";
+import { CreateWorkspaceOpts, ProjectResult, runThirdPartyLicenses } from "./";
 import { logProgress, logSuccess } from "../utils";
 import { PROMPT_AFTER_BOOTSTRAP, preInstallationBuilds } from "../create-plugin";
 import { prompt } from "inquirer";
-import chalk from "chalk";
 import terminalLink from "terminal-link";
 
 /**
@@ -20,7 +19,9 @@ async function completeWorkspace(
     workspaceData: CreateWorkspaceOpts,
     gitlabProject?: ProjectResult
 ) {
-    const localhostLink = "http://localhost:" + workspaceData.portWp;
+    // Install dependencies
+    logProgress("Bootstrap monorepo and download dependencies...");
+    execa.sync("yarn", ["bootstrap"], { cwd: createWorkspaceCwd, stdio: "inherit" });
 
     // Push changes
     if (gitlabProject) {
@@ -36,28 +37,13 @@ async function completeWorkspace(
         );
     }
 
-    // Install dependencies
-    logProgress("Bootstrap monorepo and download dependencies...");
-    execa.sync("yarn", ["bootstrap"], { cwd: createWorkspaceCwd, stdio: "inherit" });
+    runThirdPartyLicenses(createWorkspaceCwd);
 
     // Prompt first build processes
     logSuccess(
         "\n\nThe workspace is now usable. For first usage it is recommend to do some first tests and builds to check all is working fine."
     );
-    const answers = await prompt([
-        ...PROMPT_AFTER_BOOTSTRAP,
-        {
-            name: "dev",
-            type: "confirm",
-            message: `Would you like to start the development environment ${terminalLink(
-                localhostLink,
-                localhostLink
-            )}? If you pass 'yes' this shell keeps open because it starts in 'watch' mode. You can safely close the shell then and start it again with ${chalk.underline(
-                "yarn docker:start"
-            )}.`,
-            default: "y"
-        }
-    ]);
+    const answers = await prompt(PROMPT_AFTER_BOOTSTRAP);
 
     preInstallationBuilds(
         {
@@ -67,10 +53,8 @@ async function completeWorkspace(
         createPluginCwd
     );
 
-    if (answers.dev) {
-        logProgress(`Initially start the development environment...`);
-        execa("yarn", ["docker:start"], { cwd: createWorkspaceCwd, stdio: "inherit" });
-    }
+    logProgress(`Initially start the development environment...`);
+    execa("yarn", ["docker:start"], { cwd: createWorkspaceCwd, stdio: "inherit" });
 }
 
 export { completeWorkspace };

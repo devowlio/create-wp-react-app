@@ -28,7 +28,11 @@ function applySlug(workspace: string, createPluginCwd: string, slug: string) {
 
     // Get root name and replace wp-reactjs-multi-starter
     logProgress(`Find various code places and replace the root package name with ${chalk.underline(workspace)}...`);
-    const multiStarterFiles = [...globFiles("src/public/ts/**/*.tsx"), ...globFiles("package.json")];
+    const multiStarterFiles = [
+        ...globFiles("src/public/ts/**/*.tsx"),
+        ...globFiles("{composer,package}.json"),
+        ...globFiles("composer.lock")
+    ];
     searchAndReplace(multiStarterFiles, /wp-reactjs-multi-starter/g, workspace);
 
     // i18n .pot files

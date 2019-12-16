@@ -7,7 +7,7 @@ import { applyPromptsToTemplates } from "./";
 
 /**
  * Apply PHP constants to the available *.php files. Also adjust
- * the PHP autoloading namespace.
+ * the PHP autoloading namespace (+ UtilsProvider trait).
  *
  * @param createPluginCwd
  * @param appliedTemplates
@@ -36,9 +36,14 @@ function applyPhpConstantsAndNamespace(
         });
     }
     // Search & Replace constants
-    const phpFiles = glob.sync("**/*.php", { cwd: resolve(createPluginCwd, "src"), absolute: true });
+    const phpFiles = glob.sync("src/**/*.php", { cwd: createPluginCwd, absolute: true });
     constantList.forEach((constant) =>
         searchAndReplace(phpFiles, new RegExp("WPRJSS" + constant.slice(constantPrefix.length), "g"), constant)
+    );
+    searchAndReplace(
+        glob.sync("src/inc/base/UtilsProvider.trait.php", { cwd: createPluginCwd, absolute: true }),
+        /'WPRJSS'/g,
+        `'${constantPrefix}'`
     );
     logSuccess(
         `Successfully applied the following constants which you can use now - read more about them in WP ReactJS Starter documentation:\n - ${constantList.join(
