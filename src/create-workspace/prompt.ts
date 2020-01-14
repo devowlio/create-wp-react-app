@@ -5,14 +5,22 @@ import {
     logError,
     caseAll,
     inquirerRequiredValidate,
-    getInternalExampleArgs
+    getInternalExampleArgs,
+    isValidUrl
 } from "../utils";
 
 /**
  * Prompt for CLI arguments which are not passed.
  */
-async function createWorkspacePrompt({ workspace, repository, checkout, portWp, portPma }: CreateWorkspaceOpts) {
-    checkDependencies();
+async function createWorkspacePrompt({
+    workspace,
+    repository,
+    checkout,
+    remote,
+    portWp,
+    portPma
+}: CreateWorkspaceOpts) {
+    await checkDependencies();
 
     const mockData = getInternalExampleArgs("workspace");
 
@@ -31,11 +39,25 @@ async function createWorkspacePrompt({ workspace, repository, checkout, portWp, 
                         return "Your workspace name should only contain [A-Za-z0-9-_]";
                     }
                 },
+                !remote && {
+                    name: "remote",
+                    message: getCommandDescriptionForPrompt(createWorkspaceCommand, "--remote"),
+                    type: "input",
+                    validate: (value: string) => {
+                        return !value ? true : isValidUrl(value, true);
+                    }
+                },
                 !portWp && {
                     name: "portWp",
                     message: getCommandDescriptionForPrompt(createWorkspaceCommand, "--port-wp"),
                     type: "number",
-                    default: 8080,
+                    default: (answers: any) => {
+                        const useRemote = (answers.remote as string) || remote;
+                        if (useRemote) {
+                            return new URL(useRemote).port || 80;
+                        }
+                        return 8080;
+                    },
                     validate: inquirerRequiredValidate
                 },
                 !portPma && {
@@ -57,7 +79,7 @@ async function createWorkspacePrompt({ workspace, repository, checkout, portWp, 
         ));
 
     try {
-        const parsed = { workspace, repository, checkout, portWp, portPma, ...answers };
+        const parsed = { workspace, repository, checkout, remote, portWp, portPma, ...answers };
         await createWorkspaceExecute(caseAll(parsed, [], ["workspace"]));
     } catch (e) {
         logError(e.toString());

@@ -8,12 +8,14 @@ import { copyTemplates } from "./";
 /**
  * Create template files with the given prompt values.
  *
+ * @param rootName
  * @param createPluginCwd
  * @param templates
  * @param input
  * @returns
  */
 function applyPromptsToTemplates(
+    rootName: string,
     createPluginCwd: string,
     templates: ReturnType<typeof copyTemplates>,
     input: CreatePluginOpts
@@ -26,6 +28,7 @@ function applyPromptsToTemplates(
             }
             mod = mod.replace(new RegExp("\\$\\{" + key + "\\}", "g"), value);
         });
+        mod = mod.replace(new RegExp("\\$\\{rootName\\}", "g"), rootName);
         return mod;
     };
     const indexPhpFile = resolve(createPluginCwd, "src/index.php");

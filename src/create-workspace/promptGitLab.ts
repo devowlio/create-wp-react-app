@@ -52,7 +52,9 @@ async function promptGitLab(workspace: CreateWorkspaceOpts["workspace"]) {
                 message: `What's your ${terminalLink(
                     "personal token",
                     "https://docs.gitlab.com/ee/user/profile/personal_access_tokens.html"
-                )} (click the link to learn how to obtain a token; create with ${chalk.underline("api")} scope)?`,
+                )} (click the link to learn how to obtain a token; token must have ${chalk.underline(
+                    "api,write_repository"
+                )} scope)?`,
                 default: process.env.GITLAB_TOKEN,
                 validate: inquirerRequiredValidate
             }

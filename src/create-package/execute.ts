@@ -1,10 +1,16 @@
-import { CreatePackageOpts, copyTemplates, applyPhpNamespace, createExampleFiles } from "./";
+import { CreatePackageOpts, copyTemplates, createExampleFiles } from "./";
 import { resolve } from "path";
 import { existsSync } from "fs-extra";
 import { generateLicenseFile, logSuccess, logProgress, runThirdPartyLicenseForPackage } from "../utils";
 import chalk from "chalk";
 import execa from "execa";
-import { applyGitLabCi, modifyRootGitLabCiInclude, applyPackageJson } from "../misc";
+import {
+    applyGitLabCi,
+    modifyRootGitLabCiInclude,
+    applyPackageJson,
+    applyPhpNamespace,
+    regenerateLaunchJson
+} from "../misc";
 import { applyName } from "./applyName";
 
 /**
@@ -26,7 +32,7 @@ async function createPackageExecute(root: any, input: CreatePackageOpts) {
 
     copyTemplates(createPackageCwd);
     applyName(createPackageCwd, input.packageName);
-    applyPhpNamespace(createPackageCwd, input.namespace);
+    applyPhpNamespace(createPackageCwd, input.namespace, "utils");
     applyGitLabCi(createPackageCwd, input.abbreviation, "utils");
     applyPackageJson(
         root,
@@ -49,6 +55,7 @@ async function createPackageExecute(root: any, input: CreatePackageOpts) {
     execa.sync("yarn", ["lerna", "link"], { cwd: input.cwd, stdio: "inherit" });
 
     runThirdPartyLicenseForPackage(createPackageCwd);
+    regenerateLaunchJson(input.cwd);
 
     logProgress(`Rebuild the development environment, afterwards you can use your new package...`);
     execa("yarn", ["docker:start"], { cwd: input.cwd, stdio: "inherit" });

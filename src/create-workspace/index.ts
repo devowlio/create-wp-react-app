@@ -1,5 +1,4 @@
 export * from "./applyPorts";
-export * from "./applyPhpUtils";
 export * from "./runThirdPartyLicenses";
 export * from "./applyWorkspaceName";
 export * from "./checkDependencies";
@@ -10,3 +9,4 @@ export * from "./program";
 export * from "./prompt";
 export * from "./promptGitLab";
 export * from "./removeExamplePlugin";
+export * from "./createDotEnv";

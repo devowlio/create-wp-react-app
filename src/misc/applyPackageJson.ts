@@ -23,7 +23,7 @@ function applyPackageJson(
         author: string;
         homepage: string;
     },
-    updateUtilsVersion = true
+    updateUtilsVersion: boolean | string = true
 ) {
     const packageJsonPath = resolve(createPackageCwd, "package.json");
     const composerJsonPath = resolve(createPackageCwd, "composer.json");
@@ -38,7 +38,10 @@ function applyPackageJson(
 
     // Update utils version
     if (updateUtilsVersion) {
-        const utilsVersion = require(resolve(createPackageCwd, "../../packages/utils/package.json")).version;
+        const utilsVersion =
+            updateUtilsVersion === true
+                ? require(resolve(createPackageCwd, "../../packages/utils/package.json")).version
+                : updateUtilsVersion;
         packageJson = packageJson.replace(
             new RegExp('"@' + root + '\\/utils":\\s*"\\^([0-9.]+)"', "g"),
             '"@' + root + '/utils": "^' + utilsVersion + '"'

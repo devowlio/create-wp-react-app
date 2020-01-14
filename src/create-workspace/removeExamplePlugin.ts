@@ -25,10 +25,16 @@ function removeExamplePlugin(createCwd: string) {
     // Copy utils package for "create-package" command
     const tmplPackageFolder = resolve(createCwd, FOLDER_CWRA, "template-package");
     copySync(resolve(createCwd, "packages/utils"), tmplPackageFolder);
+
     rimraf.sync(resolve(tmplPackageFolder, "lib"));
     rimraf.sync(resolve(tmplPackageFolder, "src"));
+    rimraf.sync(resolve(tmplPackageFolder, "test/jest"));
+    rimraf.sync(resolve(tmplPackageFolder, "test/phpunit"));
+
     mkdirSync(resolve(tmplPackageFolder, "lib"));
     mkdirSync(resolve(tmplPackageFolder, "src"));
+    mkdirSync(resolve(tmplPackageFolder, "test/jest"));
+    mkdirSync(resolve(tmplPackageFolder, "test/phpunit"));
 
     modifyRootGitLabCiInclude("remove", createCwd, "wp-reactjs-starter", "plugins");
 }

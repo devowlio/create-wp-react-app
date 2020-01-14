@@ -1,4 +1,3 @@
-export * from "./applyPhpNamespace";
 export * from "./program";
 export * from "./applyName";
 export * from "./prompt";

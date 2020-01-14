@@ -1,4 +1,4 @@
-export * from "./applyPhpConstantsAndNamespace";
+export * from "./applyPhpConstants";
 export * from "./applyPhpFunctions";
 export * from "./applyPromptsToTemplates";
 export * from "./applySlug";

@@ -3,7 +3,6 @@ import {
     CreateWorkspaceOpts,
     createGitFolder,
     completeWorkspace,
-    applyPhpUtils,
     removeExamplePlugin,
     applyWorkspaceName,
     applyPorts,
@@ -13,7 +12,8 @@ import {
 import { createPluginPrompt } from "../create-plugin";
 import { applyName } from "../create-package";
 import { generateLicenseFile } from "../utils";
-import { applyPackageJson } from "../misc";
+import { applyPackageJson, applyPhpNamespace } from "../misc";
+import { createDotEnv } from "./createDotEnv";
 
 /**
  * Generate a new workspace from a given repository and disconnect it.
@@ -21,6 +21,7 @@ import { applyPackageJson } from "../misc";
  */
 async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
     const createCwd = resolve(process.cwd(), input.workspace);
+    const utilsPath = resolve(createCwd, "packages/utils");
     const gitlabProjectCreator = await promptGitLab(input.workspace);
     let gitLabProject: ProjectResult;
 
@@ -35,25 +36,38 @@ async function createWorkspaceExecute(input: CreateWorkspaceOpts) {
                 gitLabProject = await gitlabProjectCreator();
             }
             createGitFolder(input.checkout, input.repository, createCwd, gitLabProject);
+            createDotEnv(createCwd, input);
             removeExamplePlugin(createCwd);
             applyWorkspaceName(input.workspace, createCwd);
             applyPorts(input.portWp, input.portPma, createCwd);
         },
         async (createPluginCwd, pluginData) => {
             // Brand first package: utils
-            const utilsPath = resolve(createCwd, "packages/utils");
-            applyPhpUtils(pluginData.namespace, createPluginCwd);
+            const splitNs = pluginData.namespace.split("\\");
+            const utilsNamespace =
+                (splitNs.length > 1 ? splitNs.slice(0, -1).join("\\") : pluginData.namespace) + "\\Utils";
+
+            applyPhpNamespace(utilsPath, utilsNamespace, "utils");
+
+            // Re-apply namespace of utils package for this plugin because before it did not know the namespace
+            applyPhpNamespace(createPluginCwd, pluginData.namespace, "plugin");
+
             applyName(utilsPath, "utils");
-            applyPackageJson(input.workspace, utilsPath, {
-                author: pluginData.author,
-                description: "Utility functionality for all your WordPress plugins.",
-                homepage: pluginData.authorUri,
-                version: "1.0.0"
-            });
+            applyPackageJson(
+                input.workspace,
+                utilsPath,
+                {
+                    author: pluginData.author,
+                    description: "Utility functionality for all your WordPress plugins.",
+                    homepage: pluginData.authorUri,
+                    version: "1.0.0"
+                },
+                false
+            );
             generateLicenseFile(utilsPath, pluginData.author, pluginData.pluginDesc);
 
             // Complete
-            await completeWorkspace(createPluginCwd, createCwd, input, gitLabProject);
+            await completeWorkspace(createPluginCwd, createCwd, utilsPath, gitLabProject);
         }
     );
 }

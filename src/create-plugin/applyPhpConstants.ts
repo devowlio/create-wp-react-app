@@ -1,29 +1,26 @@
-import chalk from "chalk";
-import { resolve } from "path";
 import { CreatePluginOpts } from "./program";
 import glob from "glob";
 import { logProgress, logSuccess, searchAndReplace } from "../utils";
 import { applyPromptsToTemplates } from "./";
 
 /**
- * Apply PHP constants to the available *.php files. Also adjust
- * the PHP autoloading namespace (+ UtilsProvider trait).
+ * Apply PHP constants to the available *.php files. Also adjust UtilsProvider trait.
  *
  * @param createPluginCwd
  * @param appliedTemplates
  * @param constantPrefix
  */
-function applyPhpConstantsAndNamespace(
+function applyPhpConstants(
     createPluginCwd: string,
     appliedTemplates: ReturnType<typeof applyPromptsToTemplates>,
-    constantPrefix: CreatePluginOpts["constantPrefix"],
-    namespace: CreatePluginOpts["namespace"]
+    constantPrefix: CreatePluginOpts["constantPrefix"]
 ) {
     logProgress("Get and apply all your PHP constants to the *.php files...");
     // Find constants
     let m;
     const regex = /define\('([^']+)/g;
     const constantList: string[] = [];
+
     // tslint:disable-next-line: no-conditional-assignment
     while ((m = regex.exec(appliedTemplates.indexPhpContent)) !== null) {
         if (m.index === regex.lastIndex) {
@@ -35,13 +32,14 @@ function applyPhpConstantsAndNamespace(
             }
         });
     }
+
     // Search & Replace constants
     const phpFiles = glob.sync("src/**/*.php", { cwd: createPluginCwd, absolute: true });
     constantList.forEach((constant) =>
         searchAndReplace(phpFiles, new RegExp("WPRJSS" + constant.slice(constantPrefix.length), "g"), constant)
     );
     searchAndReplace(
-        glob.sync("src/inc/base/UtilsProvider.trait.php", { cwd: createPluginCwd, absolute: true }),
+        glob.sync("src/inc/base/UtilsProvider.php", { cwd: createPluginCwd, absolute: true }),
         /'WPRJSS'/g,
         `'${constantPrefix}'`
     );
@@ -50,9 +48,6 @@ function applyPhpConstantsAndNamespace(
             "\n - "
         )}`
     );
-    // Apply the namespace
-    logProgress(`Apply namespace ${chalk.underline(namespace)} to all PHP files for autoloading...`);
-    searchAndReplace(phpFiles, /MatthiasWeb\\WPRJSS/g, namespace);
 }
 
-export { applyPhpConstantsAndNamespace };
+export { applyPhpConstants };

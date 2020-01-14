@@ -1,3 +1,4 @@
+import rimraf from "rimraf";
 import chalk from "chalk";
 import { resolve } from "path";
 import { logProgress, FOLDER_CWRA, logSuccess, DEFAULT_ENCODING } from "../utils";
@@ -20,6 +21,11 @@ function copyTemplates(createPluginCwd: string) {
             encoding: DEFAULT_ENCODING
         })
     };
+
+    // Delete language folders
+    rimraf.sync(resolve(createPluginCwd, "src/languages"));
+    rimraf.sync(resolve(createPluginCwd, "src/public/languages"));
+
     logSuccess(`Successfully created plugin folder ${chalk.underline(createPluginCwd)}`);
     return templates;
 }

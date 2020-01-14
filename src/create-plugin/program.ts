@@ -30,16 +30,16 @@ const createPluginCommand = command("create-plugin")
     .option("--plugin-version <value>", "What should be the initial version of the plugin?")
     .option(
         "--min-php <value>",
-        "What's the minimum required PHP version (minimum of 5.6 required for the boilerplate)?"
+        "What's the minimum required PHP version (minimum of 7.0 required for the boilerplate)?"
     )
     .option(
         "--min-wp <value>",
         "What's the minimum required WordPress version (minimum of 5.2 required for the boilerplate)?"
     )
-    .option("--namespace <value>", "What's the PHP Namespace (e. g 'MatthiasWeb\\WPRJSS')?")
-    .option("--opt-prefix <value>", "What's the WordPress options (wp_options) names prefix (e. g 'wprjss')?")
-    .option("--db-prefix <value>", "What's the WordPress database tables prefix (e. g. 'wprjss')?")
-    .option("--constant-prefix <value>", "What's the PHP constants prefix (e. g. 'WPRJSS')?")
+    .option("--namespace <value>", "What's the PHP Namespace (e. g. 'MatthiasWeb\\WPRJSS')?")
+    .option("--opt-prefix <value>", "What's the WordPress options (wp_options) names prefix?")
+    .option("--db-prefix <value>", "What's the WordPress database tables prefix?")
+    .option("--constant-prefix <value>", "What's the PHP constants prefix?")
     .action((args) => createPluginPrompt(args));
 
 export { CreatePluginOpts, createPluginCommand };

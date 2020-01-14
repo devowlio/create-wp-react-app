@@ -19,7 +19,7 @@ const createPackageCommand = command("create-package")
     .option("--author <value>", "Who is the package author?")
     .option("--package-uri <value>", "What's your package' homepage URL?")
     .option("--namespace <value>", "What's the PHP Namespace (e. g 'MatthiasWeb\\WPRJSS')?")
-    .option("--abbreviation <value>", "What's a short abbreviation for this package (e. g. 'wprjss')?")
+    .option("--abbreviation <value>", "What's a short abbreviation for this package?")
     .action((args) => createPackagePrompt(args));
 
 export { CreatePackageOpts, createPackageCommand };

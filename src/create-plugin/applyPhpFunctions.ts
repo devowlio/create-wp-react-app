@@ -1,5 +1,4 @@
 import chalk from "chalk";
-import { resolve } from "path";
 import glob from "glob";
 import { logProgress, searchAndReplace } from "../utils";
 
