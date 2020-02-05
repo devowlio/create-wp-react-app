@@ -33,7 +33,8 @@ async function createPackageExecute(root: any, input: CreatePackageOpts) {
     copyTemplates(createPackageCwd);
     applyName(createPackageCwd, input.packageName);
     applyPhpNamespace(createPackageCwd, input.namespace, "utils");
-    applyGitLabCi(createPackageCwd, input.abbreviation, "utils");
+    applyGitLabCi(createPackageCwd, input.abbreviation, "utils ");
+    applyGitLabCi(createPackageCwd, input.packageName, "utils");
     applyPackageJson(
         root,
         createPackageCwd,

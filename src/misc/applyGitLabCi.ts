@@ -11,7 +11,18 @@ import { logProgress, searchAndReplace } from "../utils";
  * @param constantPrefix
  * @param prefixToReplace
  */
-function applyGitLabCi(createPackageCwd: string, constantPrefix: string, prefixToReplace: "wprjss" | "utils") {
+function applyGitLabCi(
+    createPackageCwd: string,
+    constantPrefix: string,
+    /**
+     * Why "utils " and "utils"?
+     *
+     * The package uses same name and abbreviation for folder path and package names.
+     *
+     * "utils " reflects all job definitions and needs always be the first replacement.
+     */
+    prefixToReplace: "wprjss" | "utils" | "utils "
+) {
     const jobPrefix = constantPrefix.toLowerCase();
     logProgress(`Find GitLab CI jobs and prefix them with ${chalk.underline(jobPrefix)}...`);
     const globFiles = (pattern: string) => glob.sync(pattern, { cwd: createPackageCwd, absolute: true });

@@ -7,6 +7,7 @@ import chalk from "chalk";
 import { CreateWorkspaceOpts } from "./program";
 
 type ProjectResult = {
+    [key: string]: any;
     id: number;
     name: string;
     name_with_namespace: string;
@@ -14,7 +15,6 @@ type ProjectResult = {
     path_with_namespace: string;
     ssh_url_to_repo: string;
     web_url: string;
-    [key: string]: any;
 };
 
 /**

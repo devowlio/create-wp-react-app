@@ -4,7 +4,7 @@ import { resolve, basename } from "path";
 import rimraf from "rimraf";
 import { CreateWorkspaceOpts, ProjectResult } from "./";
 import { logProgress, logSuccess } from "../utils";
-import { moveSync } from "fs-extra";
+import { moveSync, unlinkSync } from "fs-extra";
 
 /**
  * Clone the repository and disconnect it.
@@ -37,6 +37,9 @@ function createGitFolder(
         moveSync(downloadCloneTarget + "/.git", createCwd + "/.git");
         rimraf.sync(downloadCloneTarget);
     }
+
+    // Remove root LICENSE file
+    unlinkSync(resolve(createCwd, "LICENSE"));
 
     logSuccess(`Workspace successfully created in ${chalk.underline(createCwd)}`);
 }

@@ -17,7 +17,7 @@ const createWorkspaceCommand = command("create-workspace")
         "What's the name of your workspace (similar to your future git repository name)?",
         ""
     )
-    .option("-r, --repository [value]", "The repository URL", "https://github.com/matzeeable/wp-reactjs-starter")
+    .option("-r, --repository [value]", "The repository URL", "https://github.com/devowlio/wp-react-starter")
     .option("-g, --checkout [value]", "The checkout ref", "master")
     .option("--remote <number>", "Which URL should be used for WordPress development? Leave empty for `localhost`")
     .option("--port-wp <number>", "Which port should be used for the local WordPress development?", (i) => +i)
