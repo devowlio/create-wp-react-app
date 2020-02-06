@@ -16,7 +16,17 @@
     "bin": {
         "create-wp-react-app": "lib/index.js"
     },
-    "author": "Matthias Günter <support@matthias-web.com>",
+    "author": {
+        "name": "Matthias Günter",
+        "email": "matthias.guenter@devowl.io",
+        "url": "https://devowl.io/"
+    },
+    "contributors": [
+        {
+            "name": "devowl.io GmbH",
+            "email": "mail@devowl.io"
+        }
+    ],
     "license": "MIT",
     "bugs": {
         "url": "https://github.com/matzeeable/create-wp-react-app/issues"
