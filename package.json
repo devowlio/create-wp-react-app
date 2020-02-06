@@ -16,6 +16,14 @@
     "bin": {
         "create-wp-react-app": "lib/index.js"
     },
+    "homepage": "https://github.com/devowlio/create-wp-react-app",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/devowlio/create-wp-react-app.git"
+    },
+    "bugs": {
+        "url": "https://github.com/devowlio/create-wp-react-app/issues"
+    },
     "author": {
         "name": "Matthias Günter",
         "email": "matthias.guenter@devowl.io",
@@ -28,10 +36,6 @@
         }
     ],
     "license": "MIT",
-    "bugs": {
-        "url": "https://github.com/matzeeable/create-wp-react-app/issues"
-    },
-    "homepage": "https://github.com/matzeeable/create-wp-react-app#readme",
     "husky": {
         "hooks": {
             "pre-commit": "pretty-quick --staged",
