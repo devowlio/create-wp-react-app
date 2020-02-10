@@ -16,7 +16,7 @@
     "bin": {
         "create-wp-react-app": "lib/index.js"
     },
-    "homepage": "https://devowl.io",
+    "homepage": "https://devowl.io/wp-react-starter/",
     "repository": {
         "type": "git",
         "url": "git+https://github.com/devowlio/create-wp-react-app.git"
