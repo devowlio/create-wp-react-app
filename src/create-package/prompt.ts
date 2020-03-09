@@ -14,6 +14,7 @@ import {
 } from "../utils";
 import { resolve } from "path";
 import slugify from "slugify";
+import { newsletterPrompt } from "../misc";
 
 /**
  * Prompt for CLI arguments which are not passed.
@@ -114,6 +115,9 @@ async function createPackagePrompt({
                 }
             ].filter(Boolean)
         ));
+
+    // If there is no package name given via CLI also ask for email marketing
+    await newsletterPrompt(!(mockData as any) && !packageName);
 
     try {
         let parsed = {

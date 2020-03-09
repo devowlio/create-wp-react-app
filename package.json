@@ -62,6 +62,7 @@
         "endOfLine": "lf"
     },
     "dependencies": {
+        "axios": "^0.19.2",
         "chalk": "^3.0.0",
         "commander": "^4.0.1",
         "execa": "^4.0.0",

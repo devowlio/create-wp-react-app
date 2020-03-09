@@ -15,6 +15,7 @@ import {
 } from "../utils";
 import { resolve } from "path";
 import slugify from "slugify";
+import { newsletterPrompt } from "../misc";
 
 /**
  * Prompt for CLI arguments which are not passed.
@@ -204,6 +205,9 @@ async function createPluginPrompt(
                 }
             ].filter(Boolean)
         ));
+
+    // If there is no plugin name given via CLI also ask for email marketing
+    await newsletterPrompt(!(mockData as any) && !pluginName);
 
     try {
         let parsed = {
