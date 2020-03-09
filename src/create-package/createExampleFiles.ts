@@ -1,7 +1,7 @@
 import chalk from "chalk";
 import { logProgress, logSuccess } from "../utils";
 import { CreatePackageOpts } from "./program";
-import { writeFileSync } from "fs-extra";
+import { writeFileSync, mkdirSync } from "fs-extra";
 import { resolve } from "path";
 
 /**
@@ -35,6 +35,8 @@ class MyClass {
     }
 }`;
 
+    mkdirSync(resolve(createPackageCwd, "lib"));
+    mkdirSync(resolve(createPackageCwd, "src"));
     writeFileSync(resolve(createPackageCwd, "lib", "index.tsx"), indexTsx);
     writeFileSync(resolve(createPackageCwd, "src", "MyClass.php"), myClassPhp);
     logSuccess("Successfully created example files!");
