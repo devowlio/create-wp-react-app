@@ -1,6 +1,6 @@
 {
     "name": "create-wp-react-app",
-    "version": "2.0.5",
+    "version": "2.1.0",
     "description": "Create React WordPress plugin with no build configuration.",
     "scripts": {
         "build": "tsc",
