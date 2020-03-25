@@ -26,6 +26,7 @@ function applySlug(workspace: string, createPluginCwd: string, slug: string) {
     logProgress(`Find various code places and replace the root package name with ${chalk.underline(workspace)}...`);
     const multiStarterFiles = [
         ...globFiles("src/public/ts/**/*.tsx"),
+        ...globFiles("test/jest/**/*.tsx"),
         ...globFiles("{composer,package}.json"),
         ...globFiles("composer.lock"),
         ...globFiles("src/index.php")
